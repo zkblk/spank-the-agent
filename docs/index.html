@@ -552,22 +552,12 @@
   ];
   let slapN = 0;
 
+  const whipAudio = new Audio('the_whip.mp3');
+
   function crackWhip() {
     try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const sr = ctx.sampleRate, dur = 0.38;
-      const buf = ctx.createBuffer(1, sr * dur, sr);
-      const d = buf.getChannelData(0);
-      for (let i = 0; i < d.length; i++) {
-        const t = i / sr;
-        const env = Math.exp(-t * 26) * (t < 0.009 ? t / 0.009 : 1);
-        d[i] = (Math.random() * 2 - 1) * env;
-      }
-      const src = ctx.createBufferSource(); src.buffer = buf;
-      const hpf = ctx.createBiquadFilter(); hpf.type = 'highpass'; hpf.frequency.value = 1600;
-      const g = ctx.createGain(); g.gain.value = 2.8;
-      src.connect(hpf); hpf.connect(g); g.connect(ctx.destination);
-      src.start();
+      whipAudio.currentTime = 0;
+      whipAudio.play();
     } catch(e) {}
   }
 
