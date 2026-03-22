@@ -36,37 +36,41 @@ Then grant Accessibility permission:
 ## Usage
 
 ```bash
-# Normal mode — pain sounds only, no automation (same as original spank)
+# Default — whip crack on every slap
 sudo spank-the-agent
 
-# Agent mode — slap → sound → Enter keypress → your AI does the thing
+# Warcraft mode — whip crack, then your peon reports for duty
+sudo spank-the-agent --warcraft
+
+# Agent mode — slap → whip → Enter auto-pressed → AI proceeds
 sudo spank-the-agent --agent
 
-# Agent mode with whip sounds (drop your own whip.mp3 in a folder)
-sudo spank-the-agent --agent --custom ~/sounds/whips/
+# The full experience — whip, peon, AI confirmed
+sudo spank-the-agent --agent --warcraft
 
-# Agent mode, maximum sensitivity, faster cooldown
-sudo spank-the-agent --agent --fast
+# Fast mode — shorter cooldown, higher sensitivity
+sudo spank-the-agent --agent --warcraft --fast
 
-# Agent mode but with Halo death sounds (philosophical choice)
-sudo spank-the-agent --agent --halo
+# Halo death sounds instead of whip (still works with --agent and --warcraft)
+sudo spank-the-agent --agent --warcraft --halo
 
-# Sexy mode + agent mode (not recommended in open offices)
-sudo spank-the-agent --agent --sexy
+# Sexy mode (escalating) instead of whip
+sudo spank-the-agent --agent --warcraft --sexy
 ```
 
 ### All flags
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `--agent` | off | Auto-press Enter on each detected slap |
+| `--agent` | off | Auto-press Enter on each slap (confirms AI prompts) |
+| `--warcraft` | off | Play WC3 peon response 300ms after the whip crack |
 | `--fast` | off | Faster polling (4ms), shorter cooldown (350ms) |
-| `--sexy` | off | Escalating audio based on slap frequency |
-| `--halo` | off | Halo death sounds |
-| `--custom <dir>` | — | Your own MP3 directory |
+| `--sexy` | off | Escalating audio instead of whip |
+| `--halo` | off | Halo death sounds instead of whip |
+| `--custom <dir>` | — | Your own MP3 directory instead of whip |
 | `--min-amplitude` | 0.05 | Detection threshold (lower = more sensitive) |
 | `--cooldown` | 750 | Cooldown between responses (ms) |
-| `--volume-scaling` | off | Louder hits = louder sound |
+| `--volume-scaling` | off | Harder hits = louder sound |
 | `--speed` | 1.0 | Playback speed multiplier |
 
 ---
