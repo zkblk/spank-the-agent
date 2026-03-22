@@ -379,6 +379,51 @@
     .st    { padding-top: 4px; font-size: 13px; color: #666; line-height: 1.6; }
     .st strong { color: #d0ccc4; }
 
+    /* ── INSTALL TABS ── */
+
+    .install-tabs {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 28px;
+    }
+
+    .itab {
+      background: none;
+      border: 1px solid #222;
+      border-radius: 7px;
+      color: #444;
+      cursor: pointer;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 13px;
+      padding: 8px 18px;
+      transition: all 0.15s;
+    }
+    .itab:hover { border-color: #333; color: #888; }
+    .itab.active { border-color: var(--orange); color: var(--orange); }
+
+    .cmd {
+      display: inline-block;
+      margin-top: 8px;
+      background: #0a0a0c;
+      border: 1px solid #222;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 12px;
+      color: #ff5500;
+      cursor: pointer;
+      transition: border-color 0.15s;
+      word-break: break-all;
+      font-family: 'Share Tech Mono', monospace;
+    }
+    .cmd:hover { border-color: #444; }
+    .cmd-hint {
+      font-size: 11px;
+      color: #333;
+      margin-top: 5px;
+      display: block;
+    }
+
     /* ── FOOTER ── */
 
     footer {
@@ -479,7 +524,7 @@
   <div class="cta">
     <button class="btn-slap" onclick="doSlap()">👋 SLAP IT</button>
     <a class="btn-dl" href="https://github.com/zkblk/spank-the-agent/releases/latest/download/SpankTheAgent.zip">
-      ↓ Download v0.1.0
+      ↓ Download v1.4.4
     </a>
   </div>
   <div class="note">Apple Silicon (M2+) · macOS 13+ · Free & Open Source</div>
@@ -536,13 +581,51 @@
 <!-- HOW -->
 <section class="how">
   <h2>INSTALL</h2>
-  <div class="steps">
-    <div class="step"><div class="sn">1</div><div class="st"><strong>Download SpankTheAgent.zip</strong> and unzip it.</div></div>
-    <div class="step"><div class="sn">2</div><div class="st"><strong>Drag SpankTheAgent.app to Applications.</strong></div></div>
-    <div class="step"><div class="sn">3</div><div class="st">macOS will block it on first launch. Open <strong>Terminal</strong> and run:<br><code style="display:inline-block;margin-top:8px;background:#0a0a0c;border:1px solid #222;border-radius:6px;padding:8px 12px;font-size:12px;color:#ff5500;user-select:all">xattr -dr com.apple.quarantine /Applications/SpankTheAgent.app</code><br><span style="font-size:12px;color:#444;margin-top:6px;display:block">This is standard for open-source apps not sold through the App Store. One time only.</span></div></div>
-    <div class="step"><div class="sn">4</div><div class="st">Open it. A hand icon appears in your menu bar.</div></div>
-    <div class="step"><div class="sn">5</div><div class="st">Click → <strong>Start.</strong> Enter password once for accelerometer access.</div></div>
-    <div class="step"><div class="sn">6</div><div class="st"><strong>Slap your MacBook.</strong> Done.</div></div>
+
+  <!-- Tab switcher -->
+  <div class="install-tabs">
+    <button class="itab active" onclick="switchTab('app')">App (recommended)</button>
+    <button class="itab" onclick="switchTab('git')">From source (git)</button>
+  </div>
+
+  <!-- App install -->
+  <div class="install-panel" id="tab-app">
+    <div class="steps">
+      <div class="step"><div class="sn">1</div><div class="st"><a href="https://github.com/zkblk/spank-the-agent/releases/latest/download/SpankTheAgent.zip" style="color:var(--orange)">Download SpankTheAgent.zip</a> and unzip it.</div></div>
+      <div class="step"><div class="sn">2</div><div class="st"><strong>Drag SpankTheAgent.app to /Applications.</strong></div></div>
+      <div class="step"><div class="sn">3</div>
+        <div class="st">macOS blocks unsigned apps. Open <strong>Terminal</strong> and run once:<br>
+        <code class="cmd" onclick="copyCmd(this)">xattr -dr com.apple.quarantine /Applications/SpankTheAgent.app</code>
+        <span class="cmd-hint">click to copy · standard for open-source apps · one time only</span>
+        </div>
+      </div>
+      <div class="step"><div class="sn">4</div><div class="st">Open <strong>SpankTheAgent</strong> — a hand icon appears in the menu bar.</div></div>
+      <div class="step"><div class="sn">5</div><div class="st">Click → <strong>Start.</strong> Enter password once for accelerometer access.</div></div>
+      <div class="step"><div class="sn">6</div><div class="st"><strong>Slap your MacBook.</strong> Done.</div></div>
+    </div>
+  </div>
+
+  <!-- Git / source install -->
+  <div class="install-panel" id="tab-git" style="display:none">
+    <div class="steps">
+      <div class="step"><div class="sn">1</div>
+        <div class="st">Clone and build:<br>
+        <code class="cmd" onclick="copyCmd(this)">git clone https://github.com/zkblk/spank-the-agent && cd spank-the-agent && cd app && bash build.sh</code>
+        </div>
+      </div>
+      <div class="step"><div class="sn">2</div>
+        <div class="st">Or install CLI only (no app):<br>
+        <code class="cmd" onclick="copyCmd(this)">go install github.com/zkblk/spank-the-agent@latest</code>
+        </div>
+      </div>
+      <div class="step"><div class="sn">3</div><div class="st">Run the CLI:<br>
+        <code class="cmd" onclick="copyCmd(this)">sudo spank-the-agent --agent --warcraft</code>
+      </div></div>
+      <div class="step"><div class="sn">4</div><div class="st">Or drag the built <code style="color:#888">app/SpankTheAgent.app</code> to <code style="color:#888">/Applications</code> — no quarantine needed since you built it locally.</div></div>
+    </div>
+    <div style="margin-top:20px;padding:14px;background:#0a0a0c;border:1px solid #1a1a1e;border-radius:8px;font-size:12px;color:#444">
+      Requires: <span style="color:#666">Go 1.22+</span> · <span style="color:#666">Xcode Command Line Tools</span> · <span style="color:#666">Apple Silicon Mac</span>
+    </div>
   </div>
 </section>
 
@@ -646,6 +729,21 @@
 
   // auto-demo on load
   setTimeout(doSlap, 1600);
+
+  function switchTab(name) {
+    document.querySelectorAll('.itab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.install-panel').forEach(p => p.style.display = 'none');
+    document.getElementById('tab-' + name).style.display = 'block';
+    event.target.classList.add('active');
+  }
+
+  function copyCmd(el) {
+    navigator.clipboard.writeText(el.innerText).then(() => {
+      const orig = el.style.color;
+      el.style.color = '#00e676';
+      setTimeout(() => { el.style.color = orig; }, 600);
+    });
+  }
 </script>
 </body>
 </html>
