@@ -5,350 +5,715 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Spank The Agent — Slap your MacBook. Your AI agent obeys.</title>
   <meta name="description" content="Tired of pressing Enter every time your AI asks permission? Slap your MacBook instead. Whip crack included.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg: #0c0c0e;
+      --surface: #111114;
+      --border: #1e1e22;
+      --orange: #ff5500;
+      --gold: #ffc107;
+      --green: #00e676;
+      --text: #f4f0e8;
+      --muted: #555;
+    }
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      background: #0a0a0a;
-      color: #f0f0f0;
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
-      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Share Tech Mono', monospace;
+      overflow-x: hidden;
     }
 
-    /* Hero */
+    /* ── HERO ── */
+
     .hero {
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      text-align: center;
-      padding: 100px 24px 80px;
+      padding: 60px 24px 40px;
+      position: relative;
+      overflow: hidden;
     }
 
-    .badge {
-      display: inline-block;
-      background: #1a1a1a;
-      border: 1px solid #333;
-      border-radius: 20px;
-      padding: 6px 16px;
-      font-size: 13px;
-      color: #888;
-      margin-bottom: 32px;
-      letter-spacing: 0.5px;
+    /* Scanlines */
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg, transparent, transparent 2px,
+        rgba(0,0,0,0.12) 2px, rgba(0,0,0,0.12) 4px
+      );
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    /* Grid */
+    .hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,85,0,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,85,0,0.04) 1px, transparent 1px);
+      background-size: 44px 44px;
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      font-size: 11px;
+      letter-spacing: 5px;
+      color: var(--orange);
+      text-transform: uppercase;
+      margin-bottom: 18px;
+      position: relative;
+      z-index: 2;
     }
 
     h1 {
-      font-size: clamp(36px, 7vw, 80px);
-      font-weight: 700;
-      line-height: 1.05;
-      letter-spacing: -2px;
-      max-width: 900px;
-      margin-bottom: 24px;
-    }
-
-    h1 span {
-      background: linear-gradient(135deg, #ff6b35, #f7c59f);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .subtitle {
-      font-size: clamp(16px, 2.5vw, 22px);
-      color: #888;
-      max-width: 560px;
-      line-height: 1.6;
-      margin-bottom: 48px;
-    }
-
-    .download-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      background: #f0f0f0;
-      color: #0a0a0a;
-      text-decoration: none;
-      padding: 16px 32px;
-      border-radius: 12px;
-      font-size: 17px;
-      font-weight: 600;
-      transition: background 0.15s, transform 0.1s;
-    }
-
-    .download-btn:hover {
-      background: #fff;
-      transform: translateY(-1px);
-    }
-
-    .download-note {
-      margin-top: 14px;
-      font-size: 13px;
-      color: #555;
-    }
-
-    /* Demo strip */
-    .demo {
-      background: #111;
-      border-top: 1px solid #1e1e1e;
-      border-bottom: 1px solid #1e1e1e;
-      padding: 48px 24px;
+      font-family: 'Bungee', cursive;
+      font-size: clamp(52px, 10vw, 110px);
+      line-height: 0.9;
       text-align: center;
+      position: relative;
+      z-index: 2;
     }
 
-    .sequence {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      flex-wrap: wrap;
+    h1 .orange { color: var(--orange); }
+
+    .sub {
       font-size: clamp(14px, 2vw, 18px);
+      color: #666;
+      margin: 16px 0 8px;
+      text-align: center;
+      position: relative;
+      z-index: 2;
     }
 
-    .seq-step {
-      background: #1a1a1a;
-      border: 1px solid #2a2a2a;
-      border-radius: 10px;
-      padding: 12px 20px;
+    /* ── SCENE ── */
+
+    .scene {
+      position: relative;
+      width: min(640px, 92vw);
+      height: 340px;
+      margin: 28px 0 20px;
+      z-index: 2;
+    }
+
+    /* Laptop */
+    .laptop-wrap {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .laptop-wrap.shaking {
+      animation: laptopShake 0.55s ease-out;
+    }
+
+    @keyframes laptopShake {
+      0%,100% { transform: translate(-50%,-50%) rotate(0); }
+      8%  { transform: translate(calc(-50% - 12px), calc(-50% + 4px)) rotate(-3deg); }
+      18% { transform: translate(calc(-50% + 12px), calc(-50% - 4px)) rotate(3deg); }
+      28% { transform: translate(calc(-50% - 8px),  calc(-50% + 2px)) rotate(-2deg); }
+      38% { transform: translate(calc(-50% + 8px),  calc(-50% - 2px)) rotate(2deg); }
+      52% { transform: translate(calc(-50% - 5px),  calc(-50%))       rotate(-1deg); }
+      65% { transform: translate(calc(-50% + 4px),  calc(-50%))       rotate(0.5deg); }
+      80% { transform: translate(calc(-50% - 2px),  calc(-50%))       rotate(0); }
+    }
+
+    /* Hand */
+    .hand {
+      position: absolute;
+      right: 8%;
+      top: 0%;
+      font-size: 72px;
+      transform: rotate(-25deg) translateY(-120px);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 6;
+      filter: drop-shadow(0 4px 24px rgba(255,85,0,0.55));
+    }
+
+    .hand.slapping {
+      animation: handSlap 0.7s cubic-bezier(.22,.61,.36,1) forwards;
+    }
+
+    @keyframes handSlap {
+      0%   { transform: rotate(-25deg) translateY(-120px); opacity: 0; }
+      20%  { transform: rotate(-20deg) translateY(20px);  opacity: 1; }
+      38%  { transform: rotate(-10deg) translateY(70px);  opacity: 1; }
+      52%  { transform: rotate(-18deg) translateY(15px);  opacity: 1; }
+      75%  { transform: rotate(-22deg) translateY(-50px); opacity: 0.8; }
+      100% { transform: rotate(-25deg) translateY(-140px); opacity: 0; }
+    }
+
+    /* Whip line */
+    .whip {
+      position: absolute;
+      right: 3%;
+      top: 12%;
+      width: 200px;
+      height: 90px;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .whip.cracking {
+      animation: whipFade 0.55s ease-out forwards;
+    }
+
+    @keyframes whipFade {
+      0%  { opacity: 0; transform: scaleX(0); transform-origin: right; }
+      15% { opacity: 1; transform: scaleX(1); transform-origin: right; }
+      65% { opacity: 1; }
+      100%{ opacity: 0; }
+    }
+
+    /* Speech bubble */
+    .speech {
+      position: absolute;
+      left: 50%;
+      top: 12%;
+      transform: translateX(-50%);
+      background: rgba(10,14,20,0.95);
+      border: 1px solid var(--green);
+      border-radius: 8px;
+      padding: 7px 14px;
+      font-size: 11px;
+      color: var(--green);
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 4;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .speech::after {
+      content: '';
+      position: absolute;
+      bottom: -7px;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 4px solid transparent;
+      border-top-color: var(--green);
+      transition: border-top-color 0.2s;
+    }
+
+    .speech.confirmed {
+      border-color: var(--orange);
+      color: var(--orange);
+    }
+    .speech.confirmed::after { border-top-color: var(--orange); }
+
+    /* Peons row */
+    .peons {
+      position: absolute;
+      bottom: 2px;
+      left: 0; right: 0;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-evenly;
+      padding: 0 40px;
+    }
+
+    .peon-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .peon-bubble {
+      font-size: 9px;
+      color: var(--gold);
+      background: rgba(255,193,7,0.08);
+      border: 1px solid rgba(255,193,7,0.25);
+      border-radius: 4px;
+      padding: 2px 6px;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.25s, transform 0.25s;
       white-space: nowrap;
     }
 
-    .seq-arrow {
-      color: #444;
+    .peon-bubble.show { opacity: 1; transform: translateY(0); }
+
+    /* Peon walking */
+    .peon-svg { width: 30px; height: 46px; }
+
+    .p-body { animation: pBob 0.55s steps(2) infinite; }
+    @keyframes pBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+
+    .p-ll { animation: pLL 0.55s steps(2) infinite; transform-origin: 10px 29px; }
+    .p-rl { animation: pRL 0.55s steps(2) infinite; transform-origin: 18px 29px; }
+    @keyframes pLL { 0%,100% { transform: rotate(-14deg); } 50% { transform: rotate(14deg); } }
+    @keyframes pRL { 0%,100% { transform: rotate(14deg); } 50% { transform: rotate(-14deg); } }
+
+    .peon-svg.pop { animation: pPop 0.4s ease-out; }
+    @keyframes pPop {
+      0%   { transform: scale(1) translateY(0); }
+      30%  { transform: scale(1.35) translateY(-10px); }
+      65%  { transform: scale(0.9) translateY(2px); }
+      100% { transform: scale(1) translateY(0); }
+    }
+
+    /* ── CTA ── */
+
+    .cta {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      justify-content: center;
+      position: relative;
+      z-index: 2;
+    }
+
+    .btn-slap {
+      font-family: 'Bungee', cursive;
       font-size: 20px;
+      background: var(--orange);
+      color: #fff;
+      border: none;
+      padding: 15px 36px;
+      border-radius: 8px;
+      cursor: pointer;
+      letter-spacing: 1px;
+      transition: background 0.15s, transform 0.08s, box-shadow 0.2s;
+    }
+    .btn-slap:hover { background: #ff6a1a; box-shadow: 0 0 36px rgba(255,85,0,0.4); }
+    .btn-slap:active { transform: scale(0.96); }
+
+    .btn-dl {
+      font-size: 13px;
+      background: transparent;
+      color: #aaa;
+      border: 1px solid #2a2a2a;
+      padding: 15px 28px;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .btn-dl:hover { border-color: #555; color: var(--text); }
+
+    .note {
+      width: 100%;
+      text-align: center;
+      font-size: 11px;
+      color: #333;
+      margin-top: 6px;
     }
 
-    .seq-step.highlight {
-      border-color: #ff6b35;
-      color: #ff6b35;
+    /* ── STRIP ── */
+
+    .strip {
+      background: #0e0e10;
+      border-top: 1px solid #1a1a1e;
+      border-bottom: 1px solid #1a1a1e;
+      padding: 36px 24px;
+      text-align: center;
     }
 
-    /* Features */
+    .seq {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      font-size: clamp(12px, 1.8vw, 15px);
+    }
+
+    .sq {
+      background: #141416;
+      border: 1px solid #222;
+      border-radius: 7px;
+      padding: 10px 18px;
+      white-space: nowrap;
+    }
+    .sq.hot { border-color: var(--orange); color: var(--orange); }
+    .sq-arr { color: #2a2a2a; font-size: 20px; }
+
+    /* ── FEATURES ── */
+
     .features {
       max-width: 960px;
       margin: 0 auto;
       padding: 80px 24px;
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 24px;
+      gap: 18px;
     }
 
     .card {
-      background: #111;
-      border: 1px solid #1e1e1e;
-      border-radius: 16px;
-      padding: 28px;
+      background: #0e0e10;
+      border: 1px solid #1a1a1e;
+      border-radius: 12px;
+      padding: 24px;
+      transition: border-color 0.2s;
     }
+    .card:hover { border-color: #2a2a2e; }
+    .card-ico { font-size: 26px; margin-bottom: 12px; }
+    .card h3 { font-family: 'Bungee', cursive; font-size: 15px; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .card p  { font-size: 13px; color: #555; line-height: 1.7; }
+    .card a  { color: #444; }
 
-    .card-icon {
-      font-size: 32px;
-      margin-bottom: 16px;
-    }
+    /* ── HOW ── */
 
-    .card h3 {
-      font-size: 18px;
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
-
-    .card p {
-      font-size: 15px;
-      color: #777;
-      line-height: 1.6;
-    }
-
-    /* How it works */
     .how {
-      max-width: 700px;
+      max-width: 600px;
       margin: 0 auto;
       padding: 0 24px 80px;
       text-align: center;
     }
 
-    .how h2 {
-      font-size: 32px;
-      font-weight: 700;
-      margin-bottom: 40px;
-      letter-spacing: -1px;
-    }
+    .how h2 { font-family: 'Bungee', cursive; font-size: 30px; letter-spacing: 2px; margin-bottom: 36px; }
 
-    .steps {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      text-align: left;
+    .steps { display: flex; flex-direction: column; gap: 14px; text-align: left; }
+    .step  { display: flex; gap: 14px; align-items: flex-start; }
+    .sn    {
+      width: 28px; height: 28px; min-width: 28px;
+      border: 1px solid #222; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; color: #444;
     }
+    .st    { padding-top: 4px; font-size: 13px; color: #666; line-height: 1.6; }
+    .st strong { color: #d0ccc4; }
 
-    .step {
-      display: flex;
-      gap: 16px;
-      align-items: flex-start;
-    }
+    /* ── FOOTER ── */
 
-    .step-num {
-      width: 32px;
-      height: 32px;
-      min-width: 32px;
-      background: #1a1a1a;
-      border: 1px solid #2a2a2a;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 13px;
-      font-weight: 600;
-      color: #666;
-    }
-
-    .step-text {
-      padding-top: 5px;
-      font-size: 16px;
-      color: #aaa;
-      line-height: 1.5;
-    }
-
-    .step-text strong {
-      color: #f0f0f0;
-    }
-
-    /* Requirements */
-    .req {
-      background: #111;
-      border-top: 1px solid #1e1e1e;
-      text-align: center;
-      padding: 48px 24px;
-      font-size: 14px;
-      color: #555;
-    }
-
-    .req strong {
-      color: #888;
-    }
-
-    /* Footer */
     footer {
       text-align: center;
-      padding: 32px 24px;
-      font-size: 13px;
-      color: #444;
-      border-top: 1px solid #1a1a1a;
+      padding: 28px 24px;
+      font-size: 11px;
+      color: #2a2a2a;
+      border-top: 1px solid #161618;
     }
-
-    footer a {
-      color: #666;
-      text-decoration: none;
-    }
-
-    footer a:hover { color: #aaa; }
+    footer a { color: #3a3a3a; text-decoration: none; }
+    footer a:hover { color: #666; }
   </style>
 </head>
 <body>
 
-  <section class="hero">
-    <div class="badge">macOS · Apple Silicon · Free & Open Source</div>
-    <h1>Slap your MacBook.<br><span>Your AI agent obeys.</span></h1>
-    <p class="subtitle">
-      Tired of pressing Enter every time your AI asks for permission?
-      Now you can just slap your laptop. Whip crack included.
-    </p>
-    <a class="download-btn" href="https://github.com/zkblk/spank-the-agent/releases/latest/download/SpankTheAgent.zip">
-      ↓ Download for macOS
+<section class="hero">
+
+  <div class="eyebrow">// macOS · Apple Silicon · Open Source</div>
+  <h1>SLAP YOUR<br><span class="orange">MACBOOK.</span></h1>
+  <p class="sub">Your AI agent stops asking. And just does it.</p>
+
+  <!-- SCENE -->
+  <div class="scene" id="scene">
+
+    <!-- Speech bubble -->
+    <div class="speech" id="speech">Claude: May I proceed? [y/n] ▊</div>
+
+    <!-- Laptop (click to slap) -->
+    <div class="laptop-wrap" id="laptop" onclick="doSlap()" title="👋 Click to slap">
+      <svg width="270" height="190" viewBox="0 0 270 190" fill="none">
+        <!-- Lid -->
+        <rect x="15" y="8" width="240" height="158" rx="9" fill="#1e1e22"/>
+        <rect x="15" y="8" width="240" height="158" rx="9" stroke="#3a3a42" stroke-width="1.5"/>
+        <!-- Screen -->
+        <rect x="24" y="16" width="222" height="142" rx="5" fill="#080810"/>
+        <!-- Terminal lines -->
+        <text x="36" y="38"  font-family="monospace" font-size="8.5" fill="#3a3a4a">$ sudo spank-the-agent --agent --warcraft</text>
+        <text x="36" y="54"  font-family="monospace" font-size="8.5" fill="#3a3a4a">⚡ Agent mode enabled.</text>
+        <text x="36" y="70"  font-family="monospace" font-size="8.5" fill="#3a3a4a">⚔️  Warcraft mode — Yes, me lord.</text>
+        <text x="36" y="86"  font-family="monospace" font-size="8.5" fill="#3a3a4a">spank-the-agent: whip mode, default tuning +warcraft +agent</text>
+        <text x="36" y="102" font-family="monospace" font-size="8.5" fill="#3a3a4a">slap #1 [hard amp=0.41g] → [Enter]  → [Yes, me lord]</text>
+        <!-- Claude line -->
+        <text x="36" y="122" font-family="monospace" font-size="8.5" fill="#00e676" id="claudeL">Claude: May I proceed? [y/n]</text>
+        <!-- Response line -->
+        <text x="36" y="138" font-family="monospace" font-size="8.5" fill="#ff5500" id="responseL" opacity="0">→ Enter pressed. Proceeding...</text>
+        <!-- Cursor -->
+        <rect x="219" y="114" width="6" height="9" fill="#00e676" id="curs">
+          <animate attributeName="opacity" values="1;0;1" dur="1s" repeatCount="indefinite"/>
+        </rect>
+        <!-- Notch -->
+        <rect x="120" y="8" width="30" height="6" rx="3" fill="#080810"/>
+      </svg>
+      <!-- Base -->
+      <svg width="290" height="28" viewBox="0 0 290 28" fill="none" style="display:block;margin:-1px auto 0">
+        <path d="M0 0 L290 0 L270 28 L20 28 Z" fill="#1e1e22"/>
+        <path d="M0 0 L290 0 L270 28 L20 28 Z" stroke="#3a3a42" stroke-width="1"/>
+        <rect x="105" y="8" width="80" height="14" rx="4" fill="#141418" stroke="#2a2a32" stroke-width="1"/>
+      </svg>
+    </div>
+
+    <!-- Hand -->
+    <div class="hand" id="hand">✋</div>
+
+    <!-- Whip SVG -->
+    <svg class="whip" id="whip" viewBox="0 0 200 90">
+      <path d="M 192 8 Q 140 38 105 32 Q 72 26 48 48 Q 24 66 6 58"
+            stroke="#ff5500" stroke-width="3.5" fill="none" stroke-linecap="round"
+            stroke-dasharray="240" stroke-dashoffset="240">
+        <animate id="whipAnim" attributeName="stroke-dashoffset"
+                 from="240" to="0" dur="0.18s" begin="indefinite" fill="freeze"/>
+      </path>
+      <!-- Crack star -->
+      <g id="crackStar" opacity="0" transform="translate(6,58)">
+        <line x1="0" y1="-11" x2="0"  y2="11"  stroke="#ffc107" stroke-width="2.5"/>
+        <line x1="-11" y1="0" x2="11" y2="0"   stroke="#ffc107" stroke-width="2.5"/>
+        <line x1="-8"  y1="-8" x2="8" y2="8"   stroke="#ffc107" stroke-width="2"/>
+        <line x1="8"   y1="-8" x2="-8" y2="8"  stroke="#ffc107" stroke-width="2"/>
+      </g>
+    </svg>
+
+    <!-- Peons -->
+    <div class="peons">
+
+      <!-- Peon 1: brown shirt -->
+      <div class="peon-wrap">
+        <div class="peon-bubble" id="b0">work work</div>
+        <svg class="peon-svg" id="p0" viewBox="0 0 28 46">
+          <g class="p-body">
+            <ellipse cx="14" cy="8" rx="7" ry="7.5" fill="#8d6e3a"/>
+            <circle cx="11.5" cy="7" r="1.5" fill="#1a0a00"/>
+            <circle cx="16.5" cy="7" r="1.5" fill="#1a0a00"/>
+            <line x1="11" y1="12" x2="9"  y2="16" stroke="#f5f5dc" stroke-width="1.8" stroke-linecap="round"/>
+            <line x1="17" y1="12" x2="19" y2="16" stroke="#f5f5dc" stroke-width="1.8" stroke-linecap="round"/>
+            <ellipse cx="14" cy="11" rx="3" ry="2" fill="#7a5c2e"/>
+            <rect x="7" y="16" width="14" height="13" rx="2" fill="#5d4037"/>
+            <rect x="7" y="25" width="14" height="3"  rx="1" fill="#3e2723"/>
+            <rect x="1" y="16" width="7"  height="5"  rx="2" fill="#8d6e3a"/>
+            <rect x="20" y="16" width="7" height="5"  rx="2" fill="#8d6e3a"/>
+            <rect class="p-ll" x="7"  y="29" width="6" height="13" rx="2" fill="#8d6e3a"/>
+            <rect class="p-rl" x="15" y="29" width="6" height="13" rx="2" fill="#8d6e3a"/>
+            <rect x="6"  y="39" width="8" height="6" rx="1" fill="#3e2723"/>
+            <rect x="14" y="39" width="8" height="6" rx="1" fill="#3e2723"/>
+          </g>
+        </svg>
+      </div>
+
+      <!-- Peon 2: purple shirt -->
+      <div class="peon-wrap">
+        <div class="peon-bubble" id="b1">yes, me lord!</div>
+        <svg class="peon-svg" id="p1" viewBox="0 0 28 46">
+          <g class="p-body">
+            <ellipse cx="14" cy="8" rx="7" ry="7.5" fill="#7a5c2e"/>
+            <circle cx="11.5" cy="7" r="1.5" fill="#1a0a00"/>
+            <circle cx="16.5" cy="7" r="1.5" fill="#1a0a00"/>
+            <line x1="11" y1="12" x2="9"  y2="16" stroke="#f5f5dc" stroke-width="1.8" stroke-linecap="round"/>
+            <line x1="17" y1="12" x2="19" y2="16" stroke="#f5f5dc" stroke-width="1.8" stroke-linecap="round"/>
+            <ellipse cx="14" cy="11" rx="3" ry="2" fill="#6b4f25"/>
+            <rect x="7" y="16" width="14" height="13" rx="2" fill="#4a148c"/>
+            <rect x="7" y="25" width="14" height="3"  rx="1" fill="#311b92"/>
+            <rect x="1" y="16" width="7"  height="5"  rx="2" fill="#7a5c2e"/>
+            <rect x="20" y="16" width="7" height="5"  rx="2" fill="#7a5c2e"/>
+            <rect class="p-ll" x="7"  y="29" width="6" height="13" rx="2" fill="#7a5c2e"/>
+            <rect class="p-rl" x="15" y="29" width="6" height="13" rx="2" fill="#7a5c2e"/>
+            <rect x="6"  y="39" width="8" height="6" rx="1" fill="#1a237e"/>
+            <rect x="14" y="39" width="8" height="6" rx="1" fill="#1a237e"/>
+          </g>
+        </svg>
+      </div>
+
+      <!-- Peon 3: teal shirt -->
+      <div class="peon-wrap">
+        <div class="peon-bubble" id="b2">i can do that</div>
+        <svg class="peon-svg" id="p2" viewBox="0 0 28 46">
+          <g class="p-body">
+            <ellipse cx="14" cy="8" rx="7" ry="7.5" fill="#9e7c4a"/>
+            <circle cx="11.5" cy="7" r="1.5" fill="#1a0a00"/>
+            <circle cx="16.5" cy="7" r="1.5" fill="#1a0a00"/>
+            <line x1="11" y1="12" x2="9"  y2="16" stroke="#f5f5dc" stroke-width="1.8" stroke-linecap="round"/>
+            <line x1="17" y1="12" x2="19" y2="16" stroke="#f5f5dc" stroke-width="1.8" stroke-linecap="round"/>
+            <ellipse cx="14" cy="11" rx="3" ry="2" fill="#8a6b3a"/>
+            <rect x="7" y="16" width="14" height="13" rx="2" fill="#00695c"/>
+            <rect x="7" y="25" width="14" height="3"  rx="1" fill="#004d40"/>
+            <rect x="1" y="16" width="7"  height="5"  rx="2" fill="#9e7c4a"/>
+            <rect x="20" y="16" width="7" height="5"  rx="2" fill="#9e7c4a"/>
+            <rect class="p-ll" x="7"  y="29" width="6" height="13" rx="2" fill="#9e7c4a"/>
+            <rect class="p-rl" x="15" y="29" width="6" height="13" rx="2" fill="#9e7c4a"/>
+            <rect x="6"  y="39" width="8" height="6" rx="1" fill="#004d40"/>
+            <rect x="14" y="39" width="8" height="6" rx="1" fill="#004d40"/>
+          </g>
+        </svg>
+      </div>
+
+    </div><!-- /peons -->
+  </div><!-- /scene -->
+
+  <!-- CTA -->
+  <div class="cta">
+    <button class="btn-slap" onclick="doSlap()">👋 SLAP IT</button>
+    <a class="btn-dl" href="https://github.com/zkblk/spank-the-agent/releases/latest/download/SpankTheAgent.zip">
+      ↓ Download v0.1.0
     </a>
-    <div class="download-note">Requires Apple Silicon (M2+) · Free forever</div>
-  </section>
-
-  <section class="demo">
-    <div class="sequence">
-      <div class="seq-step">👋 Slap laptop</div>
-      <div class="seq-arrow">→</div>
-      <div class="seq-step">💥 Whip crack</div>
-      <div class="seq-arrow">→</div>
-      <div class="seq-step">⚔️ "Yes, me lord"</div>
-      <div class="seq-arrow">→</div>
-      <div class="seq-step highlight">⌨️ Enter pressed</div>
-    </div>
-  </section>
-
-  <section class="features">
-
-    <div class="card">
-      <div class="card-icon">💥</div>
-      <h3>Whip crack on every slap</h3>
-      <p>Every time you hit your MacBook, a satisfying whip crack plays. Because
-        your laptop should know who's in charge.</p>
-    </div>
-
-    <div class="card">
-      <div class="card-icon">⌨️</div>
-      <h3>Agent mode</h3>
-      <p>Automatically presses Enter 80ms after the slap — confirming whatever
-        your AI agent was nervously asking permission for.</p>
-    </div>
-
-    <div class="card">
-      <div class="card-icon">⚔️</div>
-      <h3>Warcraft mode</h3>
-      <p>"Yes, me lord." "I can do that." "Work work." Your AI now responds
-        like a WC3 peon who was just assigned a task.</p>
-    </div>
-
-    <div class="card">
-      <div class="card-icon">🎯</div>
-      <h3>Menu bar app</h3>
-      <p>Lives quietly in your menu bar. Toggle Agent and Warcraft modes
-        with one click. No terminal, no config files.</p>
-    </div>
-
-    <div class="card">
-      <div class="card-icon">⚡</div>
-      <h3>Apple Silicon accelerometer</h3>
-      <p>Reads directly from the Bosch BMI286 IMU via IOKit HID — the same
-        chip that protects your hard drive from drops.</p>
-    </div>
-
-    <div class="card">
-      <div class="card-icon">🔓</div>
-      <h3>Open source · MIT</h3>
-      <p>Forked from <a href="https://github.com/taigrr/spank" style="color:#666">spank</a>
-        by Tai Groot. Add your own sounds, tweak the sensitivity, do whatever you want.</p>
-    </div>
-
-  </section>
-
-  <section class="how">
-    <h2>How to install</h2>
-    <div class="steps">
-      <div class="step">
-        <div class="step-num">1</div>
-        <div class="step-text"><strong>Download SpankTheAgent.zip</strong> and unzip it.</div>
-      </div>
-      <div class="step">
-        <div class="step-num">2</div>
-        <div class="step-text"><strong>Drag SpankTheAgent.app to Applications.</strong></div>
-      </div>
-      <div class="step">
-        <div class="step-num">3</div>
-        <div class="step-text"><strong>Open the app.</strong> A menu bar icon appears.</div>
-      </div>
-      <div class="step">
-        <div class="step-num">4</div>
-        <div class="step-text">Click the icon → <strong>Start.</strong>
-          Enter your password once — needed to access the accelerometer sensor.</div>
-      </div>
-      <div class="step">
-        <div class="step-num">5</div>
-        <div class="step-text"><strong>Slap your MacBook.</strong> That's it.</div>
-      </div>
-    </div>
-  </section>
-
-  <div class="req">
-    <strong>Requirements:</strong> macOS 13+ · Apple Silicon (M2 or later)
   </div>
+  <div class="note">Apple Silicon (M2+) · macOS 13+ · Free & Open Source</div>
 
-  <footer>
-    <a href="https://github.com/zkblk/spank-the-agent">GitHub</a> ·
-    Built on <a href="https://github.com/taigrr/spank">spank</a> by Tai Groot ·
-    MIT License
-  </footer>
+</section>
 
+<!-- STRIP -->
+<section class="strip">
+  <div class="seq">
+    <div class="sq">👋 Slap MacBook</div>
+    <div class="sq-arr">→</div>
+    <div class="sq">💥 Whip crack</div>
+    <div class="sq-arr">→</div>
+    <div class="sq">⚔️ "Yes, me lord"</div>
+    <div class="sq-arr">→</div>
+    <div class="sq hot">⌨️ Enter pressed</div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features">
+  <div class="card">
+    <div class="card-ico">💥</div>
+    <h3>Whip crack, always</h3>
+    <p>Every slap plays a real whip crack. Because your MacBook should know who's in charge.</p>
+  </div>
+  <div class="card">
+    <div class="card-ico">⌨️</div>
+    <h3>Agent mode</h3>
+    <p>Presses Enter 80ms after impact. Your AI stops asking permission and just does the thing.</p>
+  </div>
+  <div class="card">
+    <div class="card-ico">⚔️</div>
+    <h3>Warcraft mode</h3>
+    <p>"Yes, me lord." "I can do that." "Work work." Your AI now responds like a WC3 peon assigned a task.</p>
+  </div>
+  <div class="card">
+    <div class="card-ico">🎯</div>
+    <h3>Menu bar app</h3>
+    <p>One icon. Click Start, enter password once, never touch a terminal again.</p>
+  </div>
+  <div class="card">
+    <div class="card-ico">⚡</div>
+    <h3>Raw accelerometer</h3>
+    <p>Reads the Bosch BMI286 IMU directly via IOKit HID. No lag, no polling, just physics.</p>
+  </div>
+  <div class="card">
+    <div class="card-ico">🔓</div>
+    <h3>MIT · Open source</h3>
+    <p>Forked from <a href="https://github.com/taigrr/spank">spank</a> by Tai Groot. Add your own sounds. Ship your own version.</p>
+  </div>
+</section>
+
+<!-- HOW -->
+<section class="how">
+  <h2>INSTALL</h2>
+  <div class="steps">
+    <div class="step"><div class="sn">1</div><div class="st"><strong>Download SpankTheAgent.zip</strong> and unzip it.</div></div>
+    <div class="step"><div class="sn">2</div><div class="st"><strong>Drag SpankTheAgent.app to Applications.</strong></div></div>
+    <div class="step"><div class="sn">3</div><div class="st">Open it. <strong>⚡</strong> appears in your menu bar.</div></div>
+    <div class="step"><div class="sn">4</div><div class="st">Click → <strong>Start.</strong> Enter password once for accelerometer access.</div></div>
+    <div class="step"><div class="sn">5</div><div class="st"><strong>Slap your MacBook.</strong> Done.</div></div>
+  </div>
+</section>
+
+<footer>
+  <a href="https://github.com/zkblk/spank-the-agent">GitHub</a> ·
+  Built on <a href="https://github.com/taigrr/spank">spank</a> by Tai Groot ·
+  MIT License
+</footer>
+
+<script>
+  const phrases = [
+    ['work work',   'yes, me lord!', 'i can do that'],
+    ['more work!',  'zug zug!',      'ready!'],
+    ['ok ok...',    'yes, me lord!', 'work work'],
+    ['not again...','RIGHT AWAY!',   'i can do that'],
+  ];
+  let slapN = 0;
+
+  function crackWhip() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const sr = ctx.sampleRate, dur = 0.38;
+      const buf = ctx.createBuffer(1, sr * dur, sr);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) {
+        const t = i / sr;
+        const env = Math.exp(-t * 26) * (t < 0.009 ? t / 0.009 : 1);
+        d[i] = (Math.random() * 2 - 1) * env;
+      }
+      const src = ctx.createBufferSource(); src.buffer = buf;
+      const hpf = ctx.createBiquadFilter(); hpf.type = 'highpass'; hpf.frequency.value = 1600;
+      const g = ctx.createGain(); g.gain.value = 2.8;
+      src.connect(hpf); hpf.connect(g); g.connect(ctx.destination);
+      src.start();
+    } catch(e) {}
+  }
+
+  function doSlap() {
+    const laptop   = document.getElementById('laptop');
+    const hand     = document.getElementById('hand');
+    const whip     = document.getElementById('whip');
+    const speech   = document.getElementById('speech');
+    const claudeL  = document.getElementById('claudeL');
+    const responseL= document.getElementById('responseL');
+    const curs     = document.getElementById('curs');
+    const star     = document.getElementById('crackStar');
+
+    const set = phrases[slapN++ % phrases.length];
+
+    // reset
+    laptop.classList.remove('shaking');
+    hand.classList.remove('slapping');
+    whip.classList.remove('cracking');
+    [0,1,2].forEach(i => { document.getElementById('p'+i).classList.remove('pop'); document.getElementById('b'+i).classList.remove('show'); });
+    void laptop.offsetWidth;
+
+    // hand swings down
+    hand.classList.add('slapping');
+
+    // impact at ~220ms
+    setTimeout(() => {
+      laptop.classList.add('shaking');
+      whip.classList.add('cracking');
+      document.getElementById('whipAnim').beginElement();
+      star.setAttribute('opacity','1');
+      crackWhip();
+
+      claudeL.setAttribute('fill','#ff5500');
+      responseL.setAttribute('opacity','1');
+      curs.style.display = 'none';
+      speech.textContent = '✓ Enter pressed. Proceeding...';
+      speech.classList.add('confirmed');
+
+      setTimeout(() => star.setAttribute('opacity','0'), 300);
+
+      // peons react
+      [0,1,2].forEach((i, idx) => {
+        setTimeout(() => {
+          document.getElementById('p'+i).classList.add('pop');
+          const b = document.getElementById('b'+i);
+          b.textContent = set[i];
+          b.classList.add('show');
+        }, idx * 90);
+      });
+
+    }, 220);
+
+    // reset after 2.8s
+    setTimeout(() => {
+      claudeL.setAttribute('fill','#00e676');
+      responseL.setAttribute('opacity','0');
+      curs.style.display = '';
+      speech.textContent = 'Claude: May I proceed? [y/n] ▊';
+      speech.classList.remove('confirmed');
+      laptop.classList.remove('shaking');
+      hand.classList.remove('slapping');
+      whip.classList.remove('cracking');
+      [0,1,2].forEach(i => document.getElementById('b'+i).classList.remove('show'));
+    }, 2800);
+  }
+
+  // auto-demo on load
+  setTimeout(doSlap, 1600);
+</script>
 </body>
 </html>
