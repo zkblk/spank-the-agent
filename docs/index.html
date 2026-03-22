@@ -595,7 +595,7 @@
     laptop.classList.remove('shaking');
     hand.classList.remove('slapping');
     whip.classList.remove('cracking');
-    [0,1,2].forEach(i => { document.getElementById('p'+i).classList.remove('pop'); document.getElementById('b'+i).classList.remove('show'); });
+    [0,1,2].forEach(i => document.getElementById('b'+i).classList.remove('show'));
     void laptop.offsetWidth;
 
     // hand swings down
@@ -631,12 +631,11 @@
 
     // reset after 2.8s
     setTimeout(() => {
-      claudeL.setAttribute('fill','#00e676');
+      claudeL.setAttribute('fill','#ff5500'); // back to orange
       responseL.setAttribute('opacity','0');
       curs.style.display = '';
       speech.textContent = 'Claude: May I proceed? [y/n] ▊';
       speech.classList.remove('confirmed');
-      speech.textContent = 'Claude: May I proceed? [y/n] ▊';
       laptop.classList.remove('shaking');
       hand.classList.remove('slapping');
       whip.classList.remove('cracking');
