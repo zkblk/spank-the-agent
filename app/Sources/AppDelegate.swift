@@ -21,6 +21,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         rebuildMenu()
     }
 
+    func applicationWillTerminate(_ notification: Notification) {
+        stopProcess()
+    }
+
     // MARK: - Menu
 
     func rebuildMenu() {
