@@ -553,11 +553,21 @@
   let slapN = 0;
 
   const whipAudio = new Audio('the_whip.mp3');
+  const peonAudios = [
+    new Audio('i_can_do_that.mp3'),
+    new Audio('wc3_peon_says_work_work_only.mp3'),
+    new Audio('yes_me_lord.mp3'),
+  ];
 
   function crackWhip() {
+    try { whipAudio.currentTime = 0; whipAudio.play(); } catch(e) {}
+  }
+
+  function playPeon(index) {
     try {
-      whipAudio.currentTime = 0;
-      whipAudio.play();
+      const a = peonAudios[index];
+      a.currentTime = 0;
+      a.play();
     } catch(e) {}
   }
 
@@ -599,13 +609,14 @@
 
       setTimeout(() => star.setAttribute('opacity','0'), 300);
 
-      // floating phrases appear with stagger
+      // floating phrases + audio staggered after whip crack
       [0,1,2].forEach((i) => {
         setTimeout(() => {
           const b = document.getElementById('b'+i);
           b.textContent = set[i];
           b.classList.add('show');
-        }, 100 + i * 120);
+          playPeon(i);
+        }, 300 + i * 600);
       });
 
     }, 220);
