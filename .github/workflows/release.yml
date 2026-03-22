@@ -41,6 +41,9 @@ jobs:
           chmod +x SpankTheAgent.app/Contents/Resources/spank-the-agent-helper
           cp AppIcon.icns SpankTheAgent.app/Contents/Resources/AppIcon.icns
 
+          # Ad-hoc sign — removes "damaged" Gatekeeper error (free, no Apple account needed)
+          codesign --force --deep --sign - SpankTheAgent.app
+
       - name: Zip app bundle
         run: |
           cd app

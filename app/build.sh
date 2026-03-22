@@ -30,6 +30,9 @@ cp spank-the-agent-helper "$RESOURCES/spank-the-agent-helper"
 chmod +x "$RESOURCES/spank-the-agent-helper"
 cp AppIcon.icns "$RESOURCES/AppIcon.icns"
 
+echo "▶ Ad-hoc signing..."
+codesign --force --deep --sign - "$APP"
+
 echo "▶ Done → $APP"
 echo ""
 echo "To install: drag $APP to /Applications"
