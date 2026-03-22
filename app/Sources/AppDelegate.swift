@@ -6,8 +6,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     var agentMode:      Bool = UserDefaults.standard.object(forKey: "agentMode")      == nil ? true  : UserDefaults.standard.bool(forKey: "agentMode")
     var warcraftMode:   Bool = UserDefaults.standard.object(forKey: "warcraftMode")   == nil ? true  : UserDefaults.standard.bool(forKey: "warcraftMode")
-    var sexyMode:       Bool = UserDefaults.standard.object(forKey: "sexyMode")       == nil ? false : UserDefaults.standard.bool(forKey: "sexyMode")
-    var multiSlapCount: Int  = UserDefaults.standard.object(forKey: "multiSlapCount") == nil ? 1     : UserDefaults.standard.integer(forKey: "multiSlapCount")
+    var sexyMode:       Bool = UserDefaults.standard.object(forKey: "sexyMode")       == nil ? true  : UserDefaults.standard.bool(forKey: "sexyMode")
+    var multiSlapCount: Int  = UserDefaults.standard.object(forKey: "multiSlapCount") == nil ? 2     : UserDefaults.standard.integer(forKey: "multiSlapCount")
 
     var helperPath: String {
         Bundle.main.path(forResource: "spank-the-agent-helper", ofType: nil)

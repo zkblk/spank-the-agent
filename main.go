@@ -238,7 +238,7 @@ Agent mode also requires Accessibility permission (one-time dialog).`,
 	}
 
 	cmd.Flags().BoolVar(&agentMode, "agent", false, "Auto-press Enter on each slap (confirms AI permission prompts)")
-	cmd.Flags().IntVar(&multiSlap, "multi-slap", 1, "Require N consecutive slaps within 1.5s to trigger (default 1)")
+	cmd.Flags().IntVar(&multiSlap, "multi-slap", 2, "Require N consecutive slaps within 1.5s to trigger (default 2)")
 	cmd.Flags().BoolVar(&warcraftMode, "warcraft", false, "Play WC3 peon response after the whip crack")
 	cmd.Flags().BoolVarP(&sexyMode, "sexy", "s", false, "Enable sexy mode (replaces whip with sexy sounds)")
 	cmd.Flags().BoolVarP(&haloMode, "halo", "H", false, "Enable halo mode (replaces whip with Halo death sounds)")
@@ -496,13 +496,20 @@ func listenForSlaps(ctx context.Context, primary *soundPack, warcraft *soundPack
 		// Always play the whip (or primary sound)
 		go playAudio(primary, file, ev.Amplitude, &speakerInit)
 
-		// WC3 peon responds after the whip crack lands
+		// WC3 peon: two different phrases after the whip crack
 		if warcraft != nil {
-			go func() {
+			go func(amp float64) {
+				// pick 2 different random phrases
+				i1 := rand.Intn(len(warcraft.files))
+				i2 := rand.Intn(len(warcraft.files) - 1)
+				if i2 >= i1 {
+					i2++
+				}
 				time.Sleep(300 * time.Millisecond)
-				peonFile := warcraft.files[rand.Intn(len(warcraft.files))]
-				playAudio(warcraft, peonFile, ev.Amplitude, &speakerInit)
-			}()
+				playAudio(warcraft, warcraft.files[i1], amp, &speakerInit)
+				time.Sleep(400 * time.Millisecond)
+				playAudio(warcraft, warcraft.files[i2], amp, &speakerInit)
+			}(ev.Amplitude)
 		}
 
 		// Auto-press Enter: fires 80ms after impact so the crack lands first
