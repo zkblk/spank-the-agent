@@ -4,13 +4,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     var statusItem: NSStatusItem!
 
-    var agentMode: Bool   = UserDefaults.standard.object(forKey: "agentMode")   == nil ? true  : UserDefaults.standard.bool(forKey: "agentMode")
-    var warcraftMode: Bool = UserDefaults.standard.object(forKey: "warcraftMode") == nil ? true  : UserDefaults.standard.bool(forKey: "warcraftMode")
+    var agentMode: Bool    = UserDefaults.standard.object(forKey: "agentMode")    == nil ? true : UserDefaults.standard.bool(forKey: "agentMode")
+    var warcraftMode: Bool = UserDefaults.standard.object(forKey: "warcraftMode") == nil ? true : UserDefaults.standard.bool(forKey: "warcraftMode")
 
-    let daemonLabel    = "com.zkblk.spank-the-agent"
-    let daemonPlist    = "/Library/LaunchDaemons/com.zkblk.spank-the-agent.plist"
-
-    // The Go helper binary lives next to the Swift binary inside the .app bundle.
     var helperPath: String {
         Bundle.main.path(forResource: "spank-the-agent-helper", ofType: nil)
             ?? "/usr/local/bin/spank-the-agent"
@@ -27,7 +23,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func rebuildMenu() {
         let running = isRunning()
-        statusItem.button?.title = running ? "🎯 on" : "💤 off"
+        if let button = statusItem.button {
+            let symbolName = running ? "bolt.fill" : "bolt.slash"
+            if let img = NSImage(systemSymbolName: symbolName, accessibilityDescription: nil) {
+                img.isTemplate = true // adapts to dark/light menu bar automatically
+                button.image = img
+                button.title = ""
+            } else {
+                button.title = running ? "⚡" : "💤"
+            }
+        }
 
         let menu = NSMenu()
 
@@ -37,12 +42,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         menu.addItem(.separator())
 
-        let toggleItem = NSMenuItem(
+        menu.addItem(NSMenuItem(
             title: running ? "Stop" : "Start",
             action: #selector(toggleDaemon),
             keyEquivalent: "s"
-        )
-        menu.addItem(toggleItem)
+        ))
 
         menu.addItem(.separator())
 
@@ -50,12 +54,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         agentItem.state = agentMode ? .on : .off
         menu.addItem(agentItem)
 
-        let warcraftItem = NSMenuItem(title: "⚔️  Warcraft mode (Yes, me lord)", action: #selector(toggleWarcraft), keyEquivalent: "")
+        let warcraftItem = NSMenuItem(title: "⚔️  Warcraft (Yes, me lord)", action: #selector(toggleWarcraft), keyEquivalent: "")
         warcraftItem.state = warcraftMode ? .on : .off
         menu.addItem(warcraftItem)
 
         menu.addItem(.separator())
-
+        menu.addItem(NSMenuItem(title: "Show log", action: #selector(showLog), keyEquivalent: "l"))
+        menu.addItem(.separator())
         menu.addItem(NSMenuItem(title: "Quit", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
 
         statusItem.menu = menu
@@ -65,99 +70,76 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc func toggleDaemon() {
         if isRunning() {
-            stopDaemon()
+            stopProcess()
         } else {
-            startDaemon()
+            startProcess()
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { self.rebuildMenu() }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { self.rebuildMenu() }
     }
 
     @objc func toggleAgent() {
         agentMode.toggle()
         UserDefaults.standard.set(agentMode, forKey: "agentMode")
-        if isRunning() { stopDaemon(); startDaemon() }
+        if isRunning() { stopProcess(); startProcess() }
         rebuildMenu()
     }
 
     @objc func toggleWarcraft() {
         warcraftMode.toggle()
         UserDefaults.standard.set(warcraftMode, forKey: "warcraftMode")
-        if isRunning() { stopDaemon(); startDaemon() }
+        if isRunning() { stopProcess(); startProcess() }
         rebuildMenu()
     }
 
-    // MARK: - Daemon management
-
-    func startDaemon() {
-        var args = [helperPath]
-        if agentMode   { args.append("--agent") }
-        if warcraftMode { args.append("--warcraft") }
-
-        let argXml = args.map { "<string>\($0)</string>" }.joined(separator: "\n                ")
-
-        let plist = """
-        <?xml version="1.0" encoding="UTF-8"?>
-        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-        <plist version="1.0">
-        <dict>
-            <key>Label</key>
-            <string>\(daemonLabel)</string>
-            <key>ProgramArguments</key>
-            <array>
-                \(argXml)
-            </array>
-            <key>RunAtLoad</key>
-            <true/>
-            <key>KeepAlive</key>
-            <true/>
-            <key>StandardOutPath</key>
-            <string>/tmp/spank-the-agent.log</string>
-            <key>StandardErrorPath</key>
-            <string>/tmp/spank-the-agent.err</string>
-        </dict>
-        </plist>
-        """
-
-        let tmpPlist = "/tmp/spank-the-agent-daemon.plist"
-        try? plist.write(toFile: tmpPlist, atomically: true, encoding: .utf8)
-
-        let script = """
-        do shell script "cp '\(tmpPlist)' '\(daemonPlist)' && launchctl load '\(daemonPlist)'" with administrator privileges
-        """
-        runAppleScript(script)
+    @objc func showLog() {
+        NSWorkspace.shared.open(URL(fileURLWithPath: "/tmp/spank-the-agent.log"))
     }
 
-    func stopDaemon() {
-        let script = """
-        do shell script "launchctl unload '\(daemonPlist)' 2>/dev/null; rm -f '\(daemonPlist)'" with administrator privileges
-        """
-        runAppleScript(script)
+    // MARK: - Process management
+
+    func startProcess() {
+        var cmd = "\(helperPath)"
+        if agentMode    { cmd += " --agent" }
+        if warcraftMode { cmd += " --warcraft" }
+
+        // nohup backgrounds it so `do shell script` returns immediately.
+        // Redirect output to log so we can inspect it.
+        let fullCmd = "nohup \(cmd) > /tmp/spank-the-agent.log 2>&1 &"
+        let script = "do shell script \"\(fullCmd)\" with administrator privileges"
+
+        var error: NSDictionary?
+        NSAppleScript(source: script)?.executeAndReturnError(&error)
+
+        if let err = error {
+            showAlert("Failed to start", message: "\(err)")
+        }
+    }
+
+    func stopProcess() {
+        let script = "do shell script \"pkill -f 'spank-the-agent-helper' 2>/dev/null; true\" with administrator privileges"
+        NSAppleScript(source: script)?.executeAndReturnError(nil)
     }
 
     func isRunning() -> Bool {
-        let out = shell("launchctl list 2>/dev/null | grep '\(daemonLabel)'")
-        return !out.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-    }
-
-    // MARK: - Helpers
-
-    @discardableResult
-    func runAppleScript(_ source: String) -> Bool {
-        var error: NSDictionary?
-        NSAppleScript(source: source)?.executeAndReturnError(&error)
-        if let err = error { print("AppleScript error: \(err)") }
-        return error == nil
-    }
-
-    func shell(_ command: String) -> String {
         let task = Process()
         let pipe = Pipe()
         task.standardOutput = pipe
         task.standardError  = Pipe()
         task.launchPath = "/bin/sh"
-        task.arguments  = ["-c", command]
+        task.arguments  = ["-c", "pgrep -f 'spank-the-agent-helper' 2>/dev/null"]
         try? task.run()
         task.waitUntilExit()
-        return String(data: pipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+        let out = String(data: pipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+        return !out.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    // MARK: - Alert
+
+    func showAlert(_ title: String, message: String) {
+        let alert = NSAlert()
+        alert.messageText     = title
+        alert.informativeText = message
+        alert.alertStyle      = .warning
+        alert.runModal()
     }
 }

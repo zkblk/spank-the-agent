@@ -8,21 +8,6 @@
 // Inspired by spank (github.com/taigrr/spank). Requires sudo.
 package main
 
-// #cgo LDFLAGS: -framework CoreGraphics
-// #include <CoreGraphics/CGEvent.h>
-// #include <CoreGraphics/CGEventSource.h>
-// #include <CoreGraphics/CGRemoteOperation.h>
-//
-// void pressEnterKey() {
-//     CGEventSourceRef src = CGEventSourceCreate(kCGEventSourceStateHIDSystemState);
-//     CGEventRef down = CGEventCreateKeyboardEvent(src, (CGKeyCode)36, true);
-//     CGEventRef up   = CGEventCreateKeyboardEvent(src, (CGKeyCode)36, false);
-//     CGEventPost(kCGHIDEventTap, down);
-//     CGEventPost(kCGHIDEventTap, up);
-//     CFRelease(down);
-//     CFRelease(up);
-//     if (src) CFRelease(src);
-// }
 import "C"
 
 import (
@@ -36,6 +21,7 @@ import (
 	"math"
 	"math/rand"
 	"os"
+	"os/exec"
 	"os/signal"
 	"sort"
 	"strings"
@@ -492,9 +478,33 @@ func listenForSlaps(ctx context.Context, primary *soundPack, warcraft *soundPack
 		if agentMode {
 			go func() {
 				time.Sleep(80 * time.Millisecond)
-				C.pressEnterKey()
+				pressEnter()
 			}()
 		}
+	}
+}
+
+// pressEnter sends a synthetic Return/Enter keypress.
+//
+// We run as root (sudo), but CGEventPost from a root daemon has no
+// WindowServer connection on modern macOS and is silently ignored.
+// Instead we delegate to osascript running as the real user — System Events
+// already has Accessibility on most Macs, so no manual setup needed.
+func pressEnter() {
+	// SUDO_USER is set by sudo to the original username.
+	user := os.Getenv("SUDO_USER")
+	var cmd *exec.Cmd
+	if user != "" {
+		// Run as the real (non-root) user so their TCC/Accessibility applies.
+		cmd = exec.Command("sudo", "-u", user,
+			"osascript", "-e", `tell application "System Events" to key code 36`)
+	} else {
+		// Fallback: already running as a normal user.
+		cmd = exec.Command("osascript", "-e", `tell application "System Events" to key code 36`)
+	}
+	if err := cmd.Run(); err != nil {
+		fmt.Fprintf(os.Stderr, "spank-the-agent: pressEnter: %v\n", err)
+		fmt.Fprintln(os.Stderr, "  → grant Accessibility to System Events in System Preferences")
 	}
 }
 

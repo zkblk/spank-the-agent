@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spank The Agent — Slap your MacBook. Your AI agent obeys.</title>
+  <meta name="description" content="Tired of pressing Enter every time your AI asks permission? Slap your MacBook instead. Whip crack included.">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #0a0a0a;
+      color: #f0f0f0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+      min-height: 100vh;
+    }
+
+    /* Hero */
+    .hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 100px 24px 80px;
+    }
+
+    .badge {
+      display: inline-block;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 20px;
+      padding: 6px 16px;
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 32px;
+      letter-spacing: 0.5px;
+    }
+
+    h1 {
+      font-size: clamp(36px, 7vw, 80px);
+      font-weight: 700;
+      line-height: 1.05;
+      letter-spacing: -2px;
+      max-width: 900px;
+      margin-bottom: 24px;
+    }
+
+    h1 span {
+      background: linear-gradient(135deg, #ff6b35, #f7c59f);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      font-size: clamp(16px, 2.5vw, 22px);
+      color: #888;
+      max-width: 560px;
+      line-height: 1.6;
+      margin-bottom: 48px;
+    }
+
+    .download-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: #f0f0f0;
+      color: #0a0a0a;
+      text-decoration: none;
+      padding: 16px 32px;
+      border-radius: 12px;
+      font-size: 17px;
+      font-weight: 600;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    .download-btn:hover {
+      background: #fff;
+      transform: translateY(-1px);
+    }
+
+    .download-note {
+      margin-top: 14px;
+      font-size: 13px;
+      color: #555;
+    }
+
+    /* Demo strip */
+    .demo {
+      background: #111;
+      border-top: 1px solid #1e1e1e;
+      border-bottom: 1px solid #1e1e1e;
+      padding: 48px 24px;
+      text-align: center;
+    }
+
+    .sequence {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: clamp(14px, 2vw, 18px);
+    }
+
+    .seq-step {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      padding: 12px 20px;
+      white-space: nowrap;
+    }
+
+    .seq-arrow {
+      color: #444;
+      font-size: 20px;
+    }
+
+    .seq-step.highlight {
+      border-color: #ff6b35;
+      color: #ff6b35;
+    }
+
+    /* Features */
+    .features {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 80px 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px;
+    }
+
+    .card {
+      background: #111;
+      border: 1px solid #1e1e1e;
+      border-radius: 16px;
+      padding: 28px;
+    }
+
+    .card-icon {
+      font-size: 32px;
+      margin-bottom: 16px;
+    }
+
+    .card h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .card p {
+      font-size: 15px;
+      color: #777;
+      line-height: 1.6;
+    }
+
+    /* How it works */
+    .how {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+      text-align: center;
+    }
+
+    .how h2 {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 40px;
+      letter-spacing: -1px;
+    }
+
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      text-align: left;
+    }
+
+    .step {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .step-num {
+      width: 32px;
+      height: 32px;
+      min-width: 32px;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: #666;
+    }
+
+    .step-text {
+      padding-top: 5px;
+      font-size: 16px;
+      color: #aaa;
+      line-height: 1.5;
+    }
+
+    .step-text strong {
+      color: #f0f0f0;
+    }
+
+    /* Requirements */
+    .req {
+      background: #111;
+      border-top: 1px solid #1e1e1e;
+      text-align: center;
+      padding: 48px 24px;
+      font-size: 14px;
+      color: #555;
+    }
+
+    .req strong {
+      color: #888;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 32px 24px;
+      font-size: 13px;
+      color: #444;
+      border-top: 1px solid #1a1a1a;
+    }
+
+    footer a {
+      color: #666;
+      text-decoration: none;
+    }
+
+    footer a:hover { color: #aaa; }
+  </style>
+</head>
+<body>
+
+  <section class="hero">
+    <div class="badge">macOS · Apple Silicon · Free & Open Source</div>
+    <h1>Slap your MacBook.<br><span>Your AI agent obeys.</span></h1>
+    <p class="subtitle">
+      Tired of pressing Enter every time your AI asks for permission?
+      Now you can just slap your laptop. Whip crack included.
+    </p>
+    <a class="download-btn" href="https://github.com/zkblk/spank-the-agent/releases/latest/download/SpankTheAgent.zip">
+      ↓ Download for macOS
+    </a>
+    <div class="download-note">Requires Apple Silicon (M2+) · Free forever</div>
+  </section>
+
+  <section class="demo">
+    <div class="sequence">
+      <div class="seq-step">👋 Slap laptop</div>
+      <div class="seq-arrow">→</div>
+      <div class="seq-step">💥 Whip crack</div>
+      <div class="seq-arrow">→</div>
+      <div class="seq-step">⚔️ "Yes, me lord"</div>
+      <div class="seq-arrow">→</div>
+      <div class="seq-step highlight">⌨️ Enter pressed</div>
+    </div>
+  </section>
+
+  <section class="features">
+
+    <div class="card">
+      <div class="card-icon">💥</div>
+      <h3>Whip crack on every slap</h3>
+      <p>Every time you hit your MacBook, a satisfying whip crack plays. Because
+        your laptop should know who's in charge.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-icon">⌨️</div>
+      <h3>Agent mode</h3>
+      <p>Automatically presses Enter 80ms after the slap — confirming whatever
+        your AI agent was nervously asking permission for.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-icon">⚔️</div>
+      <h3>Warcraft mode</h3>
+      <p>"Yes, me lord." "I can do that." "Work work." Your AI now responds
+        like a WC3 peon who was just assigned a task.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-icon">🎯</div>
+      <h3>Menu bar app</h3>
+      <p>Lives quietly in your menu bar. Toggle Agent and Warcraft modes
+        with one click. No terminal, no config files.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-icon">⚡</div>
+      <h3>Apple Silicon accelerometer</h3>
+      <p>Reads directly from the Bosch BMI286 IMU via IOKit HID — the same
+        chip that protects your hard drive from drops.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-icon">🔓</div>
+      <h3>Open source · MIT</h3>
+      <p>Forked from <a href="https://github.com/taigrr/spank" style="color:#666">spank</a>
+        by Tai Groot. Add your own sounds, tweak the sensitivity, do whatever you want.</p>
+    </div>
+
+  </section>
+
+  <section class="how">
+    <h2>How to install</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text"><strong>Download SpankTheAgent.zip</strong> and unzip it.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text"><strong>Drag SpankTheAgent.app to Applications.</strong></div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text"><strong>Open the app.</strong> A menu bar icon appears.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-text">Click the icon → <strong>Start.</strong>
+          Enter your password once — needed to access the accelerometer sensor.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-text"><strong>Slap your MacBook.</strong> That's it.</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="req">
+    <strong>Requirements:</strong> macOS 13+ · Apple Silicon (M2 or later)
+  </div>
+
+  <footer>
+    <a href="https://github.com/zkblk/spank-the-agent">GitHub</a> ·
+    Built on <a href="https://github.com/taigrr/spank">spank</a> by Tai Groot ·
+    MIT License
+  </footer>
+
+</body>
+</html>

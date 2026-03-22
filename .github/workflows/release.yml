@@ -1,0 +1,70 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: macos-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Build Go helper binary
+        run: go build -o app/spank-the-agent-helper .
+
+      - name: Build Swift app bundle
+        run: |
+          cd app
+          mkdir -p SpankTheAgent.app/Contents/MacOS
+          mkdir -p SpankTheAgent.app/Contents/Resources
+
+          swiftc \
+            Sources/main.swift \
+            Sources/AppDelegate.swift \
+            -o SpankTheAgent.app/Contents/MacOS/SpankTheAgent \
+            -framework Cocoa
+
+          cp Sources/Info.plist SpankTheAgent.app/Contents/Info.plist
+          cp spank-the-agent-helper SpankTheAgent.app/Contents/Resources/spank-the-agent-helper
+          chmod +x SpankTheAgent.app/Contents/Resources/spank-the-agent-helper
+
+      - name: Zip app bundle
+        run: |
+          cd app
+          zip -r SpankTheAgent.zip SpankTheAgent.app
+
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create ${{ github.ref_name }} \
+            app/SpankTheAgent.zip \
+            --title "Spank The Agent ${{ github.ref_name }}" \
+            --notes "## Spank The Agent ${{ github.ref_name }}
+
+          ### Install
+          1. Download **SpankTheAgent.zip** below
+          2. Unzip → drag **SpankTheAgent.app** to Applications
+          3. Launch → menu bar icon appears
+          4. Click the icon → **Start**
+          5. Enter your password (needed once for accelerometer access)
+          6. Slap your MacBook
+
+          ### Requirements
+          - macOS Apple Silicon (M2+)
+
+          ### Modes
+          - **Agent mode** — auto-presses Enter when AI asks for permission
+          - **Warcraft mode** — peon confirms the order after the whip crack
+
+          ### Credits
+          Built on [spank](https://github.com/taigrr/spank) by Tai Groot."
