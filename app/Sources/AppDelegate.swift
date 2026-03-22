@@ -155,18 +155,18 @@ You only need to do this once.
 
         menu.addItem(.separator())
 
-        // Sound modes — independent checkboxes, can enable both (plays whip then moan)
-        let soundLabel = NSMenuItem(title: "Sound:", action: nil, keyEquivalent: "")
-        soundLabel.isEnabled = false
-        menu.addItem(soundLabel)
-
-        let whipItem = NSMenuItem(title: "  🪶  Whip crack", action: #selector(toggleWhip), keyEquivalent: "")
-        whipItem.state = whipMode ? .on : .off
-        menu.addItem(whipItem)
-
-        let moanItem = NSMenuItem(title: "  🔞  Moan", action: #selector(toggleMoan), keyEquivalent: "")
-        moanItem.state = sexyMode ? .on : .off
-        menu.addItem(moanItem)
+        // TODO: Moan mode hidden until real audio files are added to audio/sexy/
+        // To re-enable: uncomment the block below and rebuild.
+        // let soundLabel = NSMenuItem(title: "Sound:", action: nil, keyEquivalent: "")
+        // soundLabel.isEnabled = false
+        // menu.addItem(soundLabel)
+        // let whipItem = NSMenuItem(title: "  🪶  Whip crack", action: #selector(toggleWhip), keyEquivalent: "")
+        // whipItem.state = whipMode ? .on : .off
+        // menu.addItem(whipItem)
+        // let moanItem = NSMenuItem(title: "  🔞  Moan", action: #selector(toggleMoan), keyEquivalent: "")
+        // moanItem.state = sexyMode ? .on : .off
+        // menu.addItem(moanItem)
+        // menu.addItem(.separator())
 
         menu.addItem(.separator())
 
