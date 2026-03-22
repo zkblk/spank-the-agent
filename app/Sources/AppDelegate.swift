@@ -20,7 +20,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         rebuildMenu()
 
-        if !UserDefaults.standard.bool(forKey: "hasCompletedSetup") {
+        // Show setup if never completed OR if sudoers file is missing (e.g. after reinstall)
+        let setupDone = UserDefaults.standard.bool(forKey: "hasCompletedSetup")
+        let sudoersExists = FileManager.default.fileExists(atPath: "/etc/sudoers.d/spank-the-agent")
+        if !setupDone || !sudoersExists {
+            UserDefaults.standard.set(false, forKey: "hasCompletedSetup")
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 self.runFirstTimeSetup()
             }
@@ -56,27 +60,32 @@ We'll set this up now.
     }
 
     func runSudoersSetup() {
-        // Write a NOPASSWD sudoers rule for this specific binary.
-        // Requires admin password ONE time, never again after this.
         let hp = helperPath
-        // Allow NOPASSWD for the helper binary and for pkill (to stop it)
-        let sudoersLine = "ALL ALL=(ALL) NOPASSWD: \\(hp), /usr/bin/pkill"
-        let script = """
-do shell script "echo '\(sudoersLine)' | tee /etc/sudoers.d/spank-the-agent && chmod 440 /etc/sudoers.d/spank-the-agent" with administrator privileges
-"""
+
+        // Step 1: write sudoers content to /tmp (no privileges needed)
+        // Avoids all AppleScript quoting nightmares.
+        let tmpFile = "/tmp/spank-sudoers"
+        let content = "ALL ALL=(ALL) NOPASSWD: \(hp), /usr/bin/pkill\n"
+        do {
+            try content.write(toFile: tmpFile, atomically: true, encoding: .utf8)
+        } catch {
+            showAlert("Setup failed", message: "Could not write temp file: \(error)\n\nApp will ask for your password each time.")
+            if agentMode { checkAccessibility() }
+            return
+        }
+
+        // Step 2: copy temp file into /etc/sudoers.d with admin privileges (ONE time)
+        let script = "do shell script \"cp /tmp/spank-sudoers /etc/sudoers.d/spank-the-agent && chmod 440 /etc/sudoers.d/spank-the-agent && rm /tmp/spank-sudoers\" with administrator privileges"
         var error: NSDictionary?
         NSAppleScript(source: script)?.executeAndReturnError(&error)
 
         if let err = error {
-            showAlert("Setup failed", message: "Could not write sudoers entry:\n\(err)\n\nYou can still use the app — it will ask for your password each time.")
+            showAlert("Setup failed", message: "Could not install sudoers rule:\n\(err)\n\nApp will ask for your password each time.")
         } else {
             UserDefaults.standard.set(true, forKey: "hasCompletedSetup")
         }
 
-        // Check Accessibility if agent mode is on
-        if agentMode {
-            checkAccessibility()
-        }
+        if agentMode { checkAccessibility() }
     }
 
     func checkAccessibility() {
