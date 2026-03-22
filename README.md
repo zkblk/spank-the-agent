@@ -21,7 +21,19 @@ Peak productivity. Zero regrets.
 
 ---
 
-## Install (App — no terminal needed)
+## Install (App — one command)
+
+```bash
+curl -fsSL https://github.com/zkblk/spank-the-agent/releases/latest/download/SpankTheAgent.zip -o /tmp/SpankTheAgent.zip && unzip -o /tmp/SpankTheAgent.zip -d /tmp && mv /tmp/SpankTheAgent.app /Applications/ && xattr -dr com.apple.quarantine /Applications/SpankTheAgent.app && open /Applications/SpankTheAgent.app && rm /tmp/SpankTheAgent.zip
+```
+
+That's it — downloads, installs, clears quarantine, opens the app. A hand icon appears in your menu bar.
+
+To uninstall: quit the app → `sudo rm -rf /Applications/SpankTheAgent.app`
+
+---
+
+## Install (App — manual)
 
 1. Download **SpankTheAgent.zip** from [Releases](https://github.com/zkblk/spank-the-agent/releases/latest)
 2. Unzip → drag **SpankTheAgent.app** to `/Applications`
@@ -81,7 +93,7 @@ sudo spank-the-agent --agent --warcraft --sexy
 | `--sexy` | off | Escalating audio instead of whip |
 | `--halo` | off | Halo death sounds instead of whip |
 | `--custom <dir>` | — | Your own MP3 directory instead of whip |
-| `--min-amplitude` | 0.05 | Detection threshold (lower = more sensitive) |
+| `--min-amplitude` | 0.15 | Detection threshold (lower = more sensitive) |
 | `--cooldown` | 750 | Cooldown between responses (ms) |
 | `--volume-scaling` | off | Harder hits = louder sound |
 | `--speed` | 1.0 | Playback speed multiplier |

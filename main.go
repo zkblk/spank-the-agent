@@ -90,7 +90,7 @@ const (
 
 const (
 	decayHalfLife             = 30.0
-	defaultMinAmplitude       = 0.05
+	defaultMinAmplitude       = 0.15
 	defaultCooldownMs         = 750
 	defaultSpeedRatio         = 1.0
 	defaultSensorPollInterval = 10 * time.Millisecond

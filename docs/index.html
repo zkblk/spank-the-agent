@@ -583,17 +583,32 @@
 
   <!-- Tab switcher -->
   <div class="install-tabs">
-    <button class="itab active" onclick="switchTab('app')">App (recommended)</button>
-    <button class="itab" onclick="switchTab('git')">From source (git)</button>
+    <button class="itab active" onclick="switchTab('app')">App (one command)</button>
+    <button class="itab" onclick="switchTab('manual')">App (manual)</button>
+    <button class="itab" onclick="switchTab('git')">From source</button>
   </div>
 
-  <!-- App install -->
+  <!-- App one-command install -->
   <div class="install-panel" id="tab-app">
+    <div class="steps">
+      <div class="step"><div class="sn">1</div>
+        <div class="st">Paste this in Terminal:<br>
+        <code class="cmd" onclick="copyCmd(this)">curl -fsSL https://github.com/zkblk/spank-the-agent/releases/latest/download/SpankTheAgent.zip -o /tmp/SpankTheAgent.zip && unzip -o /tmp/SpankTheAgent.zip -d /tmp && mv /tmp/SpankTheAgent.app /Applications/ && xattr -dr com.apple.quarantine /Applications/SpankTheAgent.app && open /Applications/SpankTheAgent.app && rm /tmp/SpankTheAgent.zip</code>
+        <span class="cmd-hint">click to copy · downloads, installs, opens — all in one</span>
+        </div>
+      </div>
+      <div class="step"><div class="sn">2</div><div class="st">A hand icon appears in the menu bar. Click → <strong>Start.</strong> Enter password once.</div></div>
+      <div class="step"><div class="sn">3</div><div class="st"><strong>Slap your MacBook.</strong> Done.</div></div>
+    </div>
+  </div>
+
+  <!-- App manual install -->
+  <div class="install-panel" id="tab-manual" style="display:none">
     <div class="steps">
       <div class="step"><div class="sn">1</div><div class="st"><a href="https://github.com/zkblk/spank-the-agent/releases/latest/download/SpankTheAgent.zip" style="color:var(--orange)">Download SpankTheAgent.zip</a> and unzip it.</div></div>
       <div class="step"><div class="sn">2</div><div class="st"><strong>Drag SpankTheAgent.app to /Applications.</strong></div></div>
       <div class="step"><div class="sn">3</div>
-        <div class="st">macOS blocks unsigned apps. Open <strong>Terminal</strong> and run once:<br>
+        <div class="st">macOS blocks unsigned apps. Run once in Terminal:<br>
         <code class="cmd" onclick="copyCmd(this)">xattr -dr com.apple.quarantine /Applications/SpankTheAgent.app</code>
         <span class="cmd-hint">click to copy · standard for open-source apps · one time only</span>
         </div>
