@@ -4,8 +4,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     var statusItem: NSStatusItem!
 
-    var agentMode: Bool    = UserDefaults.standard.object(forKey: "agentMode")    == nil ? true : UserDefaults.standard.bool(forKey: "agentMode")
-    var warcraftMode: Bool = UserDefaults.standard.object(forKey: "warcraftMode") == nil ? true : UserDefaults.standard.bool(forKey: "warcraftMode")
+    var agentMode:      Bool = UserDefaults.standard.object(forKey: "agentMode")      == nil ? true  : UserDefaults.standard.bool(forKey: "agentMode")
+    var warcraftMode:   Bool = UserDefaults.standard.object(forKey: "warcraftMode")   == nil ? true  : UserDefaults.standard.bool(forKey: "warcraftMode")
+    var sexyMode:       Bool = UserDefaults.standard.object(forKey: "sexyMode")       == nil ? false : UserDefaults.standard.bool(forKey: "sexyMode")
+    var multiSlapCount: Int  = UserDefaults.standard.object(forKey: "multiSlapCount") == nil ? 1     : UserDefaults.standard.integer(forKey: "multiSlapCount")
 
     var helperPath: String {
         Bundle.main.path(forResource: "spank-the-agent-helper", ofType: nil)
@@ -58,6 +60,24 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         warcraftItem.state = warcraftMode ? .on : .off
         menu.addItem(warcraftItem)
 
+        let sexyItem = NSMenuItem(title: "🔞  Moan mode (original spank)", action: #selector(toggleSexy), keyEquivalent: "")
+        sexyItem.state = sexyMode ? .on : .off
+        menu.addItem(sexyItem)
+
+        menu.addItem(.separator())
+
+        // Slap count submenu
+        let slapCountItem = NSMenuItem(title: "Slaps to trigger: \(multiSlapCount)×", action: nil, keyEquivalent: "")
+        let slapSubmenu = NSMenu()
+        for n in [1, 2, 3] {
+            let item = NSMenuItem(title: "\(n)× slap\(n == 1 ? " (default)" : "")", action: #selector(setSlapCount(_:)), keyEquivalent: "")
+            item.tag = n
+            item.state = multiSlapCount == n ? .on : .off
+            slapSubmenu.addItem(item)
+        }
+        slapCountItem.submenu = slapSubmenu
+        menu.addItem(slapCountItem)
+
         menu.addItem(.separator())
         menu.addItem(NSMenuItem(title: "Show log", action: #selector(showLog), keyEquivalent: "l"))
         menu.addItem(.separator())
@@ -91,6 +111,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         rebuildMenu()
     }
 
+    @objc func toggleSexy() {
+        sexyMode.toggle()
+        UserDefaults.standard.set(sexyMode, forKey: "sexyMode")
+        if isRunning() { stopProcess(); startProcess() }
+        rebuildMenu()
+    }
+
+    @objc func setSlapCount(_ sender: NSMenuItem) {
+        multiSlapCount = sender.tag
+        UserDefaults.standard.set(multiSlapCount, forKey: "multiSlapCount")
+        if isRunning() { stopProcess(); startProcess() }
+        rebuildMenu()
+    }
+
     @objc func showLog() {
         NSWorkspace.shared.open(URL(fileURLWithPath: "/tmp/spank-the-agent.log"))
     }
@@ -101,6 +135,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         var cmd = "\(helperPath)"
         if agentMode    { cmd += " --agent" }
         if warcraftMode { cmd += " --warcraft" }
+        if sexyMode     { cmd += " --sexy" }
+        if multiSlapCount > 1 { cmd += " --multi-slap \(multiSlapCount)" }
 
         // nohup backgrounds it so `do shell script` returns immediately.
         // Redirect output to log so we can inspect it.

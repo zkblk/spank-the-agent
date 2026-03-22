@@ -72,7 +72,10 @@ var (
 	pausedMu      sync.RWMutex
 	speedRatio    float64
 	agentMode     bool
+	multiSlap     int
 )
+
+const multiSlapWindow = 1500 * time.Millisecond
 
 var sensorReady = make(chan struct{})
 var sensorErr = make(chan error, 1)
@@ -235,6 +238,7 @@ Agent mode also requires Accessibility permission (one-time dialog).`,
 	}
 
 	cmd.Flags().BoolVar(&agentMode, "agent", false, "Auto-press Enter on each slap (confirms AI permission prompts)")
+	cmd.Flags().IntVar(&multiSlap, "multi-slap", 1, "Require N consecutive slaps within 1.5s to trigger (default 1)")
 	cmd.Flags().BoolVar(&warcraftMode, "warcraft", false, "Play WC3 peon response after the whip crack")
 	cmd.Flags().BoolVarP(&sexyMode, "sexy", "s", false, "Enable sexy mode (replaces whip with sexy sounds)")
 	cmd.Flags().BoolVarP(&haloMode, "halo", "H", false, "Enable halo mode (replaces whip with Halo death sounds)")
@@ -361,6 +365,7 @@ func listenForSlaps(ctx context.Context, primary *soundPack, warcraft *soundPack
 	var lastAccelTotal uint64
 	var lastEventTime time.Time
 	var lastYell time.Time
+	var pendingSlaps []time.Time // for multi-slap detection
 
 	if stdioMode {
 		go readStdinCommands()
@@ -427,11 +432,37 @@ func listenForSlaps(ctx context.Context, primary *soundPack, warcraft *soundPack
 		}
 		lastEventTime = ev.Time
 
+		if ev.Amplitude < minAmplitude {
+			continue
+		}
+
+		// Multi-slap: accumulate hits, fire only when N arrive within window.
+		// During cooldown we skip entirely so the window always starts fresh.
 		if time.Since(lastYell) <= time.Duration(cooldownMs)*time.Millisecond {
 			continue
 		}
-		if ev.Amplitude < minAmplitude {
-			continue
+
+		n := multiSlap
+		if n < 1 {
+			n = 1
+		}
+		if n > 1 {
+			pendingSlaps = append(pendingSlaps, now)
+			// trim entries older than the window
+			cutoff := now.Add(-multiSlapWindow)
+			i := 0
+			for i < len(pendingSlaps) && pendingSlaps[i].Before(cutoff) {
+				i++
+			}
+			pendingSlaps = pendingSlaps[i:]
+			if len(pendingSlaps) < n {
+				if !stdioMode {
+					fmt.Printf("slap %d/%d — keep going!\n", len(pendingSlaps), n)
+				}
+				continue
+			}
+			// Got enough — fire and reset
+			pendingSlaps = pendingSlaps[:0]
 		}
 
 		lastYell = now
