@@ -21,7 +21,20 @@ Peak productivity. Zero regrets.
 
 ---
 
-## Install
+## Install (App — no terminal needed)
+
+1. Download **SpankTheAgent.zip** from [Releases](https://github.com/zkblk/spank-the-agent/releases/latest)
+2. Unzip → drag **SpankTheAgent.app** to `/Applications`
+3. Run this once in Terminal to clear the macOS quarantine flag:
+   ```bash
+   xattr -dr com.apple.quarantine /Applications/SpankTheAgent.app
+   ```
+   > This is normal for open-source apps not distributed via the App Store.
+4. Open the app — a hand icon appears in the menu bar
+5. Click → **Start** → enter password once (for accelerometer access)
+6. Slap your MacBook
+
+## Install (CLI — from source)
 
 ```bash
 go install github.com/zkblk/spank-the-agent@latest
