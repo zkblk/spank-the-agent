@@ -21,6 +21,8 @@
     <true/>
     <key>NSHighResolutionCapable</key>
     <true/>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
     <key>NSAppleEventsUsageDescription</key>
     <string>Spank The Agent needs admin privileges to start the accelerometer daemon.</string>
 </dict>

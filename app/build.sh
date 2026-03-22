@@ -20,10 +20,15 @@ swiftc \
     -o "$MACOS/SpankTheAgent" \
     -framework Cocoa
 
+echo "▶ Generating app icon..."
+swift generate_icon.swift
+iconutil -c icns AppIcon.iconset -o AppIcon.icns
+
 echo "▶ Copying resources..."
 cp Sources/Info.plist "$APP/Contents/Info.plist"
 cp spank-the-agent-helper "$RESOURCES/spank-the-agent-helper"
 chmod +x "$RESOURCES/spank-the-agent-helper"
+cp AppIcon.icns "$RESOURCES/AppIcon.icns"
 
 echo "▶ Done → $APP"
 echo ""

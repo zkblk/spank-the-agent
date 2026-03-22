@@ -33,9 +33,13 @@ jobs:
             -o SpankTheAgent.app/Contents/MacOS/SpankTheAgent \
             -framework Cocoa
 
+          swift generate_icon.swift
+          iconutil -c icns AppIcon.iconset -o AppIcon.icns
+
           cp Sources/Info.plist SpankTheAgent.app/Contents/Info.plist
           cp spank-the-agent-helper SpankTheAgent.app/Contents/Resources/spank-the-agent-helper
           chmod +x SpankTheAgent.app/Contents/Resources/spank-the-agent-helper
+          cp AppIcon.icns SpankTheAgent.app/Contents/Resources/AppIcon.icns
 
       - name: Zip app bundle
         run: |
