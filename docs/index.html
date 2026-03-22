@@ -180,18 +180,18 @@
       100%{ opacity: 0; }
     }
 
-    /* Speech bubble */
+    /* Speech bubble — orange by default, green after confirmed */
     .speech {
       position: absolute;
       left: 50%;
       top: 12%;
       transform: translateX(-50%);
       background: rgba(10,14,20,0.95);
-      border: 1px solid var(--green);
+      border: 1px solid var(--orange);
       border-radius: 8px;
       padding: 7px 14px;
       font-size: 11px;
-      color: var(--green);
+      color: var(--orange);
       white-space: nowrap;
       pointer-events: none;
       z-index: 4;
@@ -205,66 +205,56 @@
       left: 50%;
       transform: translateX(-50%);
       border: 4px solid transparent;
-      border-top-color: var(--green);
+      border-top-color: var(--orange);
       transition: border-top-color 0.2s;
     }
 
     .speech.confirmed {
-      border-color: var(--orange);
-      color: var(--orange);
+      border-color: var(--green);
+      color: var(--green);
     }
-    .speech.confirmed::after { border-top-color: var(--orange); }
+    .speech.confirmed::after { border-top-color: var(--green); }
 
-    /* Peons row */
-    .peons {
+    /* Floating peon phrases — appear after slap, no characters */
+    .phrases {
       position: absolute;
-      bottom: 2px;
+      bottom: 10px;
       left: 0; right: 0;
       display: flex;
-      align-items: flex-end;
       justify-content: space-evenly;
-      padding: 0 40px;
+      padding: 0 30px;
+      pointer-events: none;
     }
 
-    .peon-wrap {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 3px;
-    }
-
-    .peon-bubble {
-      font-size: 9px;
+    .phrase {
+      font-size: 12px;
+      font-family: 'Share Tech Mono', monospace;
       color: var(--gold);
-      background: rgba(255,193,7,0.08);
-      border: 1px solid rgba(255,193,7,0.25);
-      border-radius: 4px;
-      padding: 2px 6px;
-      opacity: 0;
-      transform: translateY(6px);
-      transition: opacity 0.25s, transform 0.25s;
+      background: rgba(255,193,7,0.1);
+      border: 1px solid rgba(255,193,7,0.3);
+      border-radius: 6px;
+      padding: 5px 10px;
       white-space: nowrap;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.3s, transform 0.3s;
     }
 
-    .peon-bubble.show { opacity: 1; transform: translateY(0); }
+    .phrase::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 3px solid transparent;
+      border-top-color: rgba(255,193,7,0.3);
+    }
 
-    /* Peon walking */
-    .peon-svg { width: 30px; height: 46px; }
+    .phrase { position: relative; }
 
-    .p-body { animation: pBob 0.55s steps(2) infinite; }
-    @keyframes pBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
-
-    .p-ll { animation: pLL 0.55s steps(2) infinite; transform-origin: 10px 29px; }
-    .p-rl { animation: pRL 0.55s steps(2) infinite; transform-origin: 18px 29px; }
-    @keyframes pLL { 0%,100% { transform: rotate(-14deg); } 50% { transform: rotate(14deg); } }
-    @keyframes pRL { 0%,100% { transform: rotate(14deg); } 50% { transform: rotate(-14deg); } }
-
-    .peon-svg.pop { animation: pPop 0.4s ease-out; }
-    @keyframes pPop {
-      0%   { transform: scale(1) translateY(0); }
-      30%  { transform: scale(1.35) translateY(-10px); }
-      65%  { transform: scale(0.9) translateY(2px); }
-      100% { transform: scale(1) translateY(0); }
+    .phrase.show {
+      opacity: 1;
+      transform: translateY(0);
     }
 
     /* ── CTA ── */
@@ -431,7 +421,7 @@
         <text x="36" y="86"  font-family="monospace" font-size="8.5" fill="#3a3a4a">spank-the-agent: whip mode, default tuning +warcraft +agent</text>
         <text x="36" y="102" font-family="monospace" font-size="8.5" fill="#3a3a4a">slap #1 [hard amp=0.41g] → [Enter]  → [Yes, me lord]</text>
         <!-- Claude line -->
-        <text x="36" y="122" font-family="monospace" font-size="8.5" fill="#00e676" id="claudeL">Claude: May I proceed? [y/n]</text>
+        <text x="36" y="122" font-family="monospace" font-size="8.5" fill="#ff5500" id="claudeL">Claude: May I proceed? [y/n]</text>
         <!-- Response line -->
         <text x="36" y="138" font-family="monospace" font-size="8.5" fill="#ff5500" id="responseL" opacity="0">→ Enter pressed. Proceeding...</text>
         <!-- Cursor -->
@@ -469,79 +459,12 @@
       </g>
     </svg>
 
-    <!-- Peons -->
-    <div class="peons">
-
-      <!-- Peon 1: brown shirt -->
-      <div class="peon-wrap">
-        <div class="peon-bubble" id="b0">work work</div>
-        <svg class="peon-svg" id="p0" viewBox="0 0 28 46">
-          <g class="p-body">
-            <ellipse cx="14" cy="8" rx="7" ry="7.5" fill="#8d6e3a"/>
-            <circle cx="11.5" cy="7" r="1.5" fill="#1a0a00"/>
-            <circle cx="16.5" cy="7" r="1.5" fill="#1a0a00"/>
-            <line x1="11" y1="12" x2="9"  y2="16" stroke="#f5f5dc" stroke-width="1.8" stroke-linecap="round"/>
-            <line x1="17" y1="12" x2="19" y2="16" stroke="#f5f5dc" stroke-width="1.8" stroke-linecap="round"/>
-            <ellipse cx="14" cy="11" rx="3" ry="2" fill="#7a5c2e"/>
-            <rect x="7" y="16" width="14" height="13" rx="2" fill="#5d4037"/>
-            <rect x="7" y="25" width="14" height="3"  rx="1" fill="#3e2723"/>
-            <rect x="1" y="16" width="7"  height="5"  rx="2" fill="#8d6e3a"/>
-            <rect x="20" y="16" width="7" height="5"  rx="2" fill="#8d6e3a"/>
-            <rect class="p-ll" x="7"  y="29" width="6" height="13" rx="2" fill="#8d6e3a"/>
-            <rect class="p-rl" x="15" y="29" width="6" height="13" rx="2" fill="#8d6e3a"/>
-            <rect x="6"  y="39" width="8" height="6" rx="1" fill="#3e2723"/>
-            <rect x="14" y="39" width="8" height="6" rx="1" fill="#3e2723"/>
-          </g>
-        </svg>
-      </div>
-
-      <!-- Peon 2: purple shirt -->
-      <div class="peon-wrap">
-        <div class="peon-bubble" id="b1">yes, me lord!</div>
-        <svg class="peon-svg" id="p1" viewBox="0 0 28 46">
-          <g class="p-body">
-            <ellipse cx="14" cy="8" rx="7" ry="7.5" fill="#7a5c2e"/>
-            <circle cx="11.5" cy="7" r="1.5" fill="#1a0a00"/>
-            <circle cx="16.5" cy="7" r="1.5" fill="#1a0a00"/>
-            <line x1="11" y1="12" x2="9"  y2="16" stroke="#f5f5dc" stroke-width="1.8" stroke-linecap="round"/>
-            <line x1="17" y1="12" x2="19" y2="16" stroke="#f5f5dc" stroke-width="1.8" stroke-linecap="round"/>
-            <ellipse cx="14" cy="11" rx="3" ry="2" fill="#6b4f25"/>
-            <rect x="7" y="16" width="14" height="13" rx="2" fill="#4a148c"/>
-            <rect x="7" y="25" width="14" height="3"  rx="1" fill="#311b92"/>
-            <rect x="1" y="16" width="7"  height="5"  rx="2" fill="#7a5c2e"/>
-            <rect x="20" y="16" width="7" height="5"  rx="2" fill="#7a5c2e"/>
-            <rect class="p-ll" x="7"  y="29" width="6" height="13" rx="2" fill="#7a5c2e"/>
-            <rect class="p-rl" x="15" y="29" width="6" height="13" rx="2" fill="#7a5c2e"/>
-            <rect x="6"  y="39" width="8" height="6" rx="1" fill="#1a237e"/>
-            <rect x="14" y="39" width="8" height="6" rx="1" fill="#1a237e"/>
-          </g>
-        </svg>
-      </div>
-
-      <!-- Peon 3: teal shirt -->
-      <div class="peon-wrap">
-        <div class="peon-bubble" id="b2">i can do that</div>
-        <svg class="peon-svg" id="p2" viewBox="0 0 28 46">
-          <g class="p-body">
-            <ellipse cx="14" cy="8" rx="7" ry="7.5" fill="#9e7c4a"/>
-            <circle cx="11.5" cy="7" r="1.5" fill="#1a0a00"/>
-            <circle cx="16.5" cy="7" r="1.5" fill="#1a0a00"/>
-            <line x1="11" y1="12" x2="9"  y2="16" stroke="#f5f5dc" stroke-width="1.8" stroke-linecap="round"/>
-            <line x1="17" y1="12" x2="19" y2="16" stroke="#f5f5dc" stroke-width="1.8" stroke-linecap="round"/>
-            <ellipse cx="14" cy="11" rx="3" ry="2" fill="#8a6b3a"/>
-            <rect x="7" y="16" width="14" height="13" rx="2" fill="#00695c"/>
-            <rect x="7" y="25" width="14" height="3"  rx="1" fill="#004d40"/>
-            <rect x="1" y="16" width="7"  height="5"  rx="2" fill="#9e7c4a"/>
-            <rect x="20" y="16" width="7" height="5"  rx="2" fill="#9e7c4a"/>
-            <rect class="p-ll" x="7"  y="29" width="6" height="13" rx="2" fill="#9e7c4a"/>
-            <rect class="p-rl" x="15" y="29" width="6" height="13" rx="2" fill="#9e7c4a"/>
-            <rect x="6"  y="39" width="8" height="6" rx="1" fill="#004d40"/>
-            <rect x="14" y="39" width="8" height="6" rx="1" fill="#004d40"/>
-          </g>
-        </svg>
-      </div>
-
-    </div><!-- /peons -->
+    <!-- Floating phrases after slap -->
+    <div class="phrases">
+      <div class="phrase" id="b0">work work</div>
+      <div class="phrase" id="b1">yes, me lord!</div>
+      <div class="phrase" id="b2">i can do that</div>
+    </div>
   </div><!-- /scene -->
 
   <!-- CTA -->
@@ -678,7 +601,7 @@
       star.setAttribute('opacity','1');
       crackWhip();
 
-      claudeL.setAttribute('fill','#ff5500');
+      claudeL.setAttribute('fill','#00e676');
       responseL.setAttribute('opacity','1');
       curs.style.display = 'none';
       speech.textContent = '✓ Enter pressed. Proceeding...';
@@ -686,14 +609,13 @@
 
       setTimeout(() => star.setAttribute('opacity','0'), 300);
 
-      // peons react
-      [0,1,2].forEach((i, idx) => {
+      // floating phrases appear with stagger
+      [0,1,2].forEach((i) => {
         setTimeout(() => {
-          document.getElementById('p'+i).classList.add('pop');
           const b = document.getElementById('b'+i);
           b.textContent = set[i];
           b.classList.add('show');
-        }, idx * 90);
+        }, 100 + i * 120);
       });
 
     }, 220);
@@ -705,6 +627,7 @@
       curs.style.display = '';
       speech.textContent = 'Claude: May I proceed? [y/n] ▊';
       speech.classList.remove('confirmed');
+      speech.textContent = 'Claude: May I proceed? [y/n] ▊';
       laptop.classList.remove('shaking');
       hand.classList.remove('slapping');
       whip.classList.remove('cracking');
