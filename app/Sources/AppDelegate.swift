@@ -33,7 +33,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationWillTerminate(_ notification: Notification) {
-        stopProcess()
+        // Use Process() directly — NSAppleScript can't show UI during termination.
+        // sudo -n = non-interactive: uses sudoers rule if available, fails silently if not.
+        let task = Process()
+        task.executableURL = URL(fileURLWithPath: "/usr/bin/sudo")
+        task.arguments = ["-n", "/usr/bin/pkill", "-f", "spank-the-agent-helper"]
+        task.standardOutput = FileHandle.nullDevice
+        task.standardError  = FileHandle.nullDevice
+        try? task.run()
+        task.waitUntilExit()
+        Thread.sleep(forTimeInterval: 0.4)
     }
 
     // MARK: - First-time setup
@@ -66,7 +75,9 @@ We'll set this up now.
         // Step 1: write sudoers content to /tmp (no privileges needed)
         // Avoids all AppleScript quoting nightmares.
         let tmpFile = "/tmp/spank-sudoers"
-        let content = "ALL ALL=(ALL) NOPASSWD: \(hp), /usr/bin/pkill\n"
+        // Correct sudoers format: username ALL=(ALL) NOPASSWD: /path
+        let username = NSUserName()
+        let content = "\(username) ALL=(ALL) NOPASSWD: \(hp), /usr/bin/pkill\n"
         do {
             try content.write(toFile: tmpFile, atomically: true, encoding: .utf8)
         } catch {
@@ -268,7 +279,7 @@ You only need to do this once.
         } else if sexyMode {
             cmd += " --sexy"
         }
-        if multiSlapCount > 1 { cmd += " --multi-slap \(multiSlapCount)" }
+        cmd += " --multi-slap \(multiSlapCount)"  // always pass — ensures default of 2 is enforced
 
         let fullCmd = "nohup sudo \(cmd) > /tmp/spank-the-agent.log 2>&1 &"
 
