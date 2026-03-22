@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleName</key>
+    <string>SpankTheAgent</string>
+    <key>CFBundleDisplayName</key>
+    <string>Spank The Agent</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.zkblk.spank-the-agent-app</string>
+    <key>CFBundleVersion</key>
+    <string>1.0.0</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0.0</string>
+    <key>CFBundleExecutable</key>
+    <string>SpankTheAgent</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <!-- Hides the dock icon — lives in the menu bar only -->
+    <key>LSUIElement</key>
+    <true/>
+    <key>NSHighResolutionCapable</key>
+    <true/>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
+    <key>NSAppleEventsUsageDescription</key>
+    <string>Spank The Agent needs admin privileges to start the accelerometer daemon.</string>
+</dict>
+</plist>

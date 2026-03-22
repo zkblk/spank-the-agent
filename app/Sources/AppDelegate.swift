@@ -6,6 +6,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     var agentMode:      Bool = UserDefaults.standard.object(forKey: "agentMode")      == nil ? true  : UserDefaults.standard.bool(forKey: "agentMode")
     var warcraftMode:   Bool = UserDefaults.standard.object(forKey: "warcraftMode")   == nil ? true  : UserDefaults.standard.bool(forKey: "warcraftMode")
+    var whipMode:       Bool = UserDefaults.standard.object(forKey: "whipMode")       == nil ? true  : UserDefaults.standard.bool(forKey: "whipMode")
     var sexyMode:       Bool = UserDefaults.standard.object(forKey: "sexyMode")       == nil ? false : UserDefaults.standard.bool(forKey: "sexyMode")
     var multiSlapCount: Int  = UserDefaults.standard.object(forKey: "multiSlapCount") == nil ? 2     : UserDefaults.standard.integer(forKey: "multiSlapCount")
 
@@ -154,16 +155,16 @@ You only need to do this once.
 
         menu.addItem(.separator())
 
-        // Sound mode: Whip vs Moan (mutually exclusive radio)
+        // Sound modes — independent checkboxes, can enable both (plays whip then moan)
         let soundLabel = NSMenuItem(title: "Sound:", action: nil, keyEquivalent: "")
         soundLabel.isEnabled = false
         menu.addItem(soundLabel)
 
-        let whipItem = NSMenuItem(title: "  🪶  Whip", action: #selector(selectWhip), keyEquivalent: "")
-        whipItem.state = sexyMode ? .off : .on
+        let whipItem = NSMenuItem(title: "  🪶  Whip crack", action: #selector(toggleWhip), keyEquivalent: "")
+        whipItem.state = whipMode ? .on : .off
         menu.addItem(whipItem)
 
-        let moanItem = NSMenuItem(title: "  🔞  Moan", action: #selector(selectMoan), keyEquivalent: "")
+        let moanItem = NSMenuItem(title: "  🔞  Moan", action: #selector(toggleMoan), keyEquivalent: "")
         moanItem.state = sexyMode ? .on : .off
         menu.addItem(moanItem)
 
@@ -223,18 +224,16 @@ You only need to do this once.
         rebuildMenu()
     }
 
-    @objc func selectWhip() {
-        guard sexyMode else { return }  // already whip, no restart needed
-        sexyMode = false
-        UserDefaults.standard.set(false, forKey: "sexyMode")
+    @objc func toggleWhip() {
+        whipMode.toggle()
+        UserDefaults.standard.set(whipMode, forKey: "whipMode")
         if isRunning() { stopProcess(); startProcess() }
         rebuildMenu()
     }
 
-    @objc func selectMoan() {
-        guard !sexyMode else { return }  // already moan, no restart needed
-        sexyMode = true
-        UserDefaults.standard.set(true, forKey: "sexyMode")
+    @objc func toggleMoan() {
+        sexyMode.toggle()
+        UserDefaults.standard.set(sexyMode, forKey: "sexyMode")
         if isRunning() { stopProcess(); startProcess() }
         rebuildMenu()
     }
@@ -263,7 +262,12 @@ You only need to do this once.
         var cmd = "\(helperPath)"
         if agentMode    { cmd += " --agent" }
         if warcraftMode { cmd += " --warcraft" }
-        if sexyMode     { cmd += " --sexy" }
+        // Sound: whip+moan together → --sexy-also; only moan → --sexy; only whip → (default)
+        if whipMode && sexyMode {
+            cmd += " --sexy-also"
+        } else if sexyMode {
+            cmd += " --sexy"
+        }
         if multiSlapCount > 1 { cmd += " --multi-slap \(multiSlapCount)" }
 
         let fullCmd = "nohup sudo \(cmd) > /tmp/spank-the-agent.log 2>&1 &"

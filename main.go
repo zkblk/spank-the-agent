@@ -59,6 +59,7 @@ var haloAudio embed.FS
 
 var (
 	sexyMode      bool
+	sexyAlso      bool
 	haloMode      bool
 	warcraftMode  bool
 	customPath    string
@@ -241,6 +242,7 @@ Agent mode also requires Accessibility permission (one-time dialog).`,
 	cmd.Flags().IntVar(&multiSlap, "multi-slap", 2, "Require N consecutive slaps within 1.5s to trigger (default 2)")
 	cmd.Flags().BoolVar(&warcraftMode, "warcraft", false, "Play WC3 peon response after the whip crack")
 	cmd.Flags().BoolVarP(&sexyMode, "sexy", "s", false, "Enable sexy mode (replaces whip with sexy sounds)")
+	cmd.Flags().BoolVar(&sexyAlso, "sexy-also", false, "Play whip first, then moan after (both sounds together)")
 	cmd.Flags().BoolVarP(&haloMode, "halo", "H", false, "Enable halo mode (replaces whip with Halo death sounds)")
 	cmd.Flags().StringVarP(&customPath, "custom", "c", "", "Path to custom MP3 directory (replaces whip)")
 	cmd.Flags().StringSliceVar(&customFiles, "custom-files", nil, "Comma-separated custom MP3 files (replaces whip)")
@@ -262,7 +264,7 @@ func run(ctx context.Context, tuning runtimeTuning) error {
 	}
 
 	modeCount := 0
-	if sexyMode {
+	if sexyMode && !sexyAlso {
 		modeCount++
 	}
 	if haloMode {
@@ -296,7 +298,7 @@ func run(ctx context.Context, tuning runtimeTuning) error {
 		primary = &soundPack{name: "custom", mode: modeRandom, custom: true, files: customFiles}
 	case customPath != "":
 		primary = &soundPack{name: "custom", dir: customPath, mode: modeRandom, custom: true}
-	case sexyMode:
+	case sexyMode && !sexyAlso:
 		primary = &soundPack{name: "sexy", fs: sexyAudio, dir: "audio/sexy", mode: modeEscalation}
 	case haloMode:
 		primary = &soundPack{name: "halo", fs: haloAudio, dir: "audio/halo", mode: modeRandom}
@@ -306,6 +308,15 @@ func run(ctx context.Context, tuning runtimeTuning) error {
 	if len(primary.files) == 0 {
 		if err := primary.loadFiles(); err != nil {
 			return fmt.Errorf("loading %s audio: %w", primary.name, err)
+		}
+	}
+
+	// Extra sexy pack — plays after whip when --sexy-also is set (both modes together)
+	var sexyExtra *soundPack
+	if sexyAlso {
+		sexyExtra = &soundPack{name: "sexy", fs: sexyAudio, dir: "audio/sexy", mode: modeEscalation}
+		if err := sexyExtra.loadFiles(); err != nil {
+			return fmt.Errorf("loading sexy audio: %w", err)
 		}
 	}
 
@@ -355,10 +366,10 @@ func run(ctx context.Context, tuning runtimeTuning) error {
 	}
 
 	time.Sleep(sensorStartupDelay)
-	return listenForSlaps(ctx, primary, warcraft, accelRing, tuning)
+	return listenForSlaps(ctx, primary, warcraft, sexyExtra, accelRing, tuning)
 }
 
-func listenForSlaps(ctx context.Context, primary *soundPack, warcraft *soundPack, accelRing *shm.RingBuffer, tuning runtimeTuning) error {
+func listenForSlaps(ctx context.Context, primary *soundPack, warcraft *soundPack, sexyExtra *soundPack, accelRing *shm.RingBuffer, tuning runtimeTuning) error {
 	tracker := newSlapTracker(primary, tuning.cooldown)
 	speakerInit := false
 	det := detector.New()
@@ -495,6 +506,15 @@ func listenForSlaps(ctx context.Context, primary *soundPack, warcraft *soundPack
 
 		// Always play the whip (or primary sound)
 		go playAudio(primary, file, ev.Amplitude, &speakerInit)
+
+		// Sexy also: play moan after whip when both modes are enabled
+		if sexyExtra != nil {
+			go func(amp float64) {
+				time.Sleep(500 * time.Millisecond)
+				sexyFile := sexyExtra.files[rand.Intn(len(sexyExtra.files))]
+				playAudio(sexyExtra, sexyFile, amp, &speakerInit)
+			}(ev.Amplitude)
+		}
 
 		// WC3 peon: one random phrase after the whip crack (different each time)
 		if warcraft != nil {
