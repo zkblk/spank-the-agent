@@ -288,7 +288,8 @@ You only need to do this once.
         } else if sexyMode {
             cmd += " --sexy"
         }
-        cmd += " --multi-slap \(multiSlapCount)"  // always pass — ensures default of 2 is enforced
+        cmd += " --multi-slap \(multiSlapCount)"   // always pass — ensures default of 2 is enforced
+        cmd += " --min-amplitude 0.20"             // always pass — prevents false positives from keyboard/desk vibration
 
         let fullCmd = "nohup sudo \(cmd) > /tmp/spank-the-agent.log 2>&1 &"
 

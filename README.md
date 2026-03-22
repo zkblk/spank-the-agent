@@ -93,7 +93,7 @@ sudo spank-the-agent --agent --warcraft --sexy
 | `--sexy` | off | Escalating audio instead of whip |
 | `--halo` | off | Halo death sounds instead of whip |
 | `--custom <dir>` | — | Your own MP3 directory instead of whip |
-| `--min-amplitude` | 0.15 | Detection threshold (lower = more sensitive) |
+| `--min-amplitude` | 0.20 | Detection threshold (lower = more sensitive) |
 | `--cooldown` | 750 | Cooldown between responses (ms) |
 | `--volume-scaling` | off | Harder hits = louder sound |
 | `--speed` | 1.0 | Playback speed multiplier |

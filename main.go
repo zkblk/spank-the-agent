@@ -76,7 +76,7 @@ var (
 	multiSlap     int
 )
 
-const multiSlapWindow = 1500 * time.Millisecond
+const multiSlapWindow = 600 * time.Millisecond
 
 var sensorReady = make(chan struct{})
 var sensorErr = make(chan error, 1)
@@ -90,7 +90,7 @@ const (
 
 const (
 	decayHalfLife             = 30.0
-	defaultMinAmplitude       = 0.15
+	defaultMinAmplitude       = 0.20
 	defaultCooldownMs         = 750
 	defaultSpeedRatio         = 1.0
 	defaultSensorPollInterval = 10 * time.Millisecond
