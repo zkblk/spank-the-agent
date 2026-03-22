@@ -291,7 +291,7 @@ You only need to do this once.
         cmd += " --multi-slap \(multiSlapCount)"   // always pass — ensures default of 2 is enforced
         cmd += " --min-amplitude 0.20"             // always pass — prevents false positives from keyboard/desk vibration
 
-        let fullCmd = "nohup sudo \(cmd) > /tmp/spank-the-agent.log 2>&1 &"
+        let fullCmd = "sudo \(cmd) > /tmp/spank-the-agent.log 2>&1 &"
 
         // After setup: sudo is NOPASSWD for this binary — no password dialog.
         // Before setup (or if sudoers write failed): fall back to admin privileges.
