@@ -496,19 +496,12 @@ func listenForSlaps(ctx context.Context, primary *soundPack, warcraft *soundPack
 		// Always play the whip (or primary sound)
 		go playAudio(primary, file, ev.Amplitude, &speakerInit)
 
-		// WC3 peon: two different phrases after the whip crack
+		// WC3 peon: one random phrase after the whip crack (different each time)
 		if warcraft != nil {
 			go func(amp float64) {
-				// pick 2 different random phrases
-				i1 := rand.Intn(len(warcraft.files))
-				i2 := rand.Intn(len(warcraft.files) - 1)
-				if i2 >= i1 {
-					i2++
-				}
 				time.Sleep(300 * time.Millisecond)
-				playAudio(warcraft, warcraft.files[i1], amp, &speakerInit)
-				time.Sleep(400 * time.Millisecond)
-				playAudio(warcraft, warcraft.files[i2], amp, &speakerInit)
+				peonFile := warcraft.files[rand.Intn(len(warcraft.files))]
+				playAudio(warcraft, peonFile, amp, &speakerInit)
 			}(ev.Amplitude)
 		}
 

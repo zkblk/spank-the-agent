@@ -6,7 +6,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     var agentMode:      Bool = UserDefaults.standard.object(forKey: "agentMode")      == nil ? true  : UserDefaults.standard.bool(forKey: "agentMode")
     var warcraftMode:   Bool = UserDefaults.standard.object(forKey: "warcraftMode")   == nil ? true  : UserDefaults.standard.bool(forKey: "warcraftMode")
-    var sexyMode:       Bool = UserDefaults.standard.object(forKey: "sexyMode")       == nil ? true  : UserDefaults.standard.bool(forKey: "sexyMode")
+    var sexyMode:       Bool = UserDefaults.standard.object(forKey: "sexyMode")       == nil ? false : UserDefaults.standard.bool(forKey: "sexyMode")
     var multiSlapCount: Int  = UserDefaults.standard.object(forKey: "multiSlapCount") == nil ? 2     : UserDefaults.standard.integer(forKey: "multiSlapCount")
 
     var helperPath: String {
@@ -60,9 +60,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         warcraftItem.state = warcraftMode ? .on : .off
         menu.addItem(warcraftItem)
 
-        let sexyItem = NSMenuItem(title: "🔞  Moan mode (original spank)", action: #selector(toggleSexy), keyEquivalent: "")
-        sexyItem.state = sexyMode ? .on : .off
-        menu.addItem(sexyItem)
+        menu.addItem(.separator())
+
+        // Sound mode: Whip vs Moan (mutually exclusive)
+        let soundLabel = NSMenuItem(title: "Sound:", action: nil, keyEquivalent: "")
+        soundLabel.isEnabled = false
+        menu.addItem(soundLabel)
+
+        let whipItem = NSMenuItem(title: "  🪶  Whip", action: #selector(selectWhip), keyEquivalent: "")
+        whipItem.state = sexyMode ? .off : .on
+        menu.addItem(whipItem)
+
+        let moanItem = NSMenuItem(title: "  🔞  Moan", action: #selector(selectMoan), keyEquivalent: "")
+        moanItem.state = sexyMode ? .on : .off
+        menu.addItem(moanItem)
 
         menu.addItem(.separator())
 
@@ -111,9 +122,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         rebuildMenu()
     }
 
-    @objc func toggleSexy() {
-        sexyMode.toggle()
-        UserDefaults.standard.set(sexyMode, forKey: "sexyMode")
+    @objc func selectWhip() {
+        sexyMode = false
+        UserDefaults.standard.set(false, forKey: "sexyMode")
+        if isRunning() { stopProcess(); startProcess() }
+        rebuildMenu()
+    }
+
+    @objc func selectMoan() {
+        sexyMode = true
+        UserDefaults.standard.set(true, forKey: "sexyMode")
         if isRunning() { stopProcess(); startProcess() }
         rebuildMenu()
     }
