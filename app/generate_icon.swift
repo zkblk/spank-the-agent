@@ -23,18 +23,10 @@ func makeIcon(_ size: Int) -> NSBitmapImageRep {
     let path = NSBezierPath(roundedRect: NSRect(x: 0, y: 0, width: s, height: s), xRadius: r, yRadius: r)
     path.setClip()
 
-    // Gradient: warm orange-red (top) → deep red (bottom)
-    let gradient = NSGradient(
-        colors: [
-            NSColor(calibratedRed: 1.00, green: 0.40, blue: 0.06, alpha: 1),
-            NSColor(calibratedRed: 0.76, green: 0.06, blue: 0.02, alpha: 1)
-        ],
-        atLocations: [0.0, 1.0],
-        colorSpace: .deviceRGB
-    )!
-    gradient.draw(in: NSRect(x: 0, y: 0, width: s, height: s), angle: 120)
+    // Flat black background
+    NSColor(calibratedWhite: 0.08, alpha: 1).setFill()
+    NSBezierPath.fill(NSRect(x: 0, y: 0, width: s, height: s))
 
-    // Raised hand emoji (holds the whip)
     let emoji = "🤚"
     let fontSize = s * 0.58
     let font = NSFont.systemFont(ofSize: fontSize)
