@@ -19,10 +19,89 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         rebuildMenu()
+
+        if !UserDefaults.standard.bool(forKey: "hasCompletedSetup") {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                self.runFirstTimeSetup()
+            }
+        }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
         stopProcess()
+    }
+
+    // MARK: - First-time setup
+
+    func runFirstTimeSetup() {
+        let alert = NSAlert()
+        alert.messageText     = "Welcome to SpankTheAgent"
+        alert.informativeText = """
+SpankTheAgent needs two things to work:
+
+1. Administrator access — to read your MacBook's accelerometer (IOKit). This is required once and won't be asked again.
+
+2. Accessibility access — only if you use Agent mode (auto-confirm). This lets the app press Enter on your behalf to confirm AI prompts.
+
+We'll set this up now.
+"""
+        alert.alertStyle = .informational
+        alert.addButton(withTitle: "Set Up (once)")
+        alert.addButton(withTitle: "Later")
+
+        let response = alert.runModal()
+        guard response == .alertFirstButtonReturn else { return }
+
+        runSudoersSetup()
+    }
+
+    func runSudoersSetup() {
+        // Write a NOPASSWD sudoers rule for this specific binary.
+        // Requires admin password ONE time, never again after this.
+        let hp = helperPath
+        // Allow NOPASSWD for the helper binary and for pkill (to stop it)
+        let sudoersLine = "ALL ALL=(ALL) NOPASSWD: \\(hp), /usr/bin/pkill"
+        let script = """
+do shell script "echo '\(sudoersLine)' | tee /etc/sudoers.d/spank-the-agent && chmod 440 /etc/sudoers.d/spank-the-agent" with administrator privileges
+"""
+        var error: NSDictionary?
+        NSAppleScript(source: script)?.executeAndReturnError(&error)
+
+        if let err = error {
+            showAlert("Setup failed", message: "Could not write sudoers entry:\n\(err)\n\nYou can still use the app — it will ask for your password each time.")
+        } else {
+            UserDefaults.standard.set(true, forKey: "hasCompletedSetup")
+        }
+
+        // Check Accessibility if agent mode is on
+        if agentMode {
+            checkAccessibility()
+        }
+    }
+
+    func checkAccessibility() {
+        let trusted = AXIsProcessTrusted()
+        if trusted { return }
+
+        let alert = NSAlert()
+        alert.messageText     = "Accessibility Access Needed"
+        alert.informativeText = """
+Agent mode presses Enter to confirm AI permission prompts — this is the whole point of SpankTheAgent.
+
+To allow this:
+System Settings → Privacy & Security → Accessibility → add SpankTheAgent
+
+You only need to do this once.
+"""
+        alert.alertStyle = .informational
+        alert.addButton(withTitle: "Open Accessibility Settings")
+        alert.addButton(withTitle: "Skip (Agent mode won't work)")
+
+        if alert.runModal() == .alertFirstButtonReturn {
+            NSWorkspace.shared.open(
+                URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!
+            )
+        }
     }
 
     // MARK: - Menu
@@ -32,11 +111,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if let button = statusItem.button {
             let symbolName = running ? "hand.raised.fill" : "hand.raised.slash"
             if let img = NSImage(systemSymbolName: symbolName, accessibilityDescription: nil) {
-                img.isTemplate = true // adapts to dark/light menu bar automatically
+                img.isTemplate = true
                 button.image = img
                 button.title = ""
             } else {
-                button.title = running ? "⚡" : "💤"
+                button.title = running ? "✊" : "🤚"
             }
         }
 
@@ -66,7 +145,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         menu.addItem(.separator())
 
-        // Sound mode: Whip vs Moan (mutually exclusive)
+        // Sound mode: Whip vs Moan (mutually exclusive radio)
         let soundLabel = NSMenuItem(title: "Sound:", action: nil, keyEquivalent: "")
         soundLabel.isEnabled = false
         menu.addItem(soundLabel)
@@ -85,7 +164,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let slapCountItem = NSMenuItem(title: "Slaps to trigger: \(multiSlapCount)×", action: nil, keyEquivalent: "")
         let slapSubmenu = NSMenu()
         for n in [1, 2, 3] {
-            let item = NSMenuItem(title: "\(n)× slap\(n == 1 ? " (default)" : "")", action: #selector(setSlapCount(_:)), keyEquivalent: "")
+            let item = NSMenuItem(title: "\(n)×\(n == 1 ? " (any single slap)" : n == 2 ? " (double slap)" : " (triple slap)")", action: #selector(setSlapCount(_:)), keyEquivalent: "")
             item.tag = n
             item.state = multiSlapCount == n ? .on : .off
             slapSubmenu.addItem(item)
@@ -95,6 +174,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         menu.addItem(.separator())
         menu.addItem(NSMenuItem(title: "Show log", action: #selector(showLog), keyEquivalent: "l"))
+        menu.addItem(NSMenuItem(title: "Accessibility settings…", action: #selector(openAccessibility), keyEquivalent: ""))
         menu.addItem(.separator())
         menu.addItem(NSMenuItem(title: "Quit", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
 
@@ -107,6 +187,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if isRunning() {
             stopProcess()
         } else {
+            // Check Accessibility when starting in agent mode
+            if agentMode && !AXIsProcessTrusted() {
+                checkAccessibility()
+            }
             startProcess()
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { self.rebuildMenu() }
@@ -115,6 +199,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @objc func toggleAgent() {
         agentMode.toggle()
         UserDefaults.standard.set(agentMode, forKey: "agentMode")
+        // If turning on agent mode, check Accessibility
+        if agentMode && !AXIsProcessTrusted() {
+            checkAccessibility()
+        }
         if isRunning() { stopProcess(); startProcess() }
         rebuildMenu()
     }
@@ -127,6 +215,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func selectWhip() {
+        guard sexyMode else { return }  // already whip, no restart needed
         sexyMode = false
         UserDefaults.standard.set(false, forKey: "sexyMode")
         if isRunning() { stopProcess(); startProcess() }
@@ -134,6 +223,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func selectMoan() {
+        guard !sexyMode else { return }  // already moan, no restart needed
         sexyMode = true
         UserDefaults.standard.set(true, forKey: "sexyMode")
         if isRunning() { stopProcess(); startProcess() }
@@ -141,6 +231,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func setSlapCount(_ sender: NSMenuItem) {
+        guard multiSlapCount != sender.tag else { return }  // already set, no restart
         multiSlapCount = sender.tag
         UserDefaults.standard.set(multiSlapCount, forKey: "multiSlapCount")
         if isRunning() { stopProcess(); startProcess() }
@@ -149,6 +240,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc func showLog() {
         NSWorkspace.shared.open(URL(fileURLWithPath: "/tmp/spank-the-agent.log"))
+    }
+
+    @objc func openAccessibility() {
+        NSWorkspace.shared.open(
+            URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!
+        )
     }
 
     // MARK: - Process management
@@ -160,21 +257,41 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if sexyMode     { cmd += " --sexy" }
         if multiSlapCount > 1 { cmd += " --multi-slap \(multiSlapCount)" }
 
-        // nohup backgrounds it so `do shell script` returns immediately.
-        // Redirect output to log so we can inspect it.
-        let fullCmd = "nohup \(cmd) > /tmp/spank-the-agent.log 2>&1 &"
-        let script = "do shell script \"\(fullCmd)\" with administrator privileges"
+        let fullCmd = "nohup sudo \(cmd) > /tmp/spank-the-agent.log 2>&1 &"
+
+        // After setup: sudo is NOPASSWD for this binary — no password dialog.
+        // Before setup (or if sudoers write failed): fall back to admin privileges.
+        let hasSetup = UserDefaults.standard.bool(forKey: "hasCompletedSetup")
+        let script: String
+        if hasSetup {
+            script = "do shell script \"\(fullCmd)\""
+        } else {
+            script = "do shell script \"\(fullCmd)\" with administrator privileges"
+        }
 
         var error: NSDictionary?
         NSAppleScript(source: script)?.executeAndReturnError(&error)
 
         if let err = error {
-            showAlert("Failed to start", message: "\(err)")
+            // If passwordless sudo failed, retry with admin privileges
+            let fallback = "do shell script \"\(fullCmd)\" with administrator privileges"
+            var err2: NSDictionary?
+            NSAppleScript(source: fallback)?.executeAndReturnError(&err2)
+            if let e2 = err2 {
+                showAlert("Failed to start", message: "\(e2)")
+            }
         }
     }
 
     func stopProcess() {
-        let script = "do shell script \"pkill -f 'spank-the-agent-helper' 2>/dev/null; true\" with administrator privileges"
+        let hasSetup = UserDefaults.standard.bool(forKey: "hasCompletedSetup")
+        let killCmd = "sudo pkill -f 'spank-the-agent-helper' 2>/dev/null; true"
+        let script: String
+        if hasSetup {
+            script = "do shell script \"\(killCmd)\""
+        } else {
+            script = "do shell script \"\(killCmd)\" with administrator privileges"
+        }
         NSAppleScript(source: script)?.executeAndReturnError(nil)
     }
 
