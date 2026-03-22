@@ -24,7 +24,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func rebuildMenu() {
         let running = isRunning()
         if let button = statusItem.button {
-            let symbolName = running ? "bolt.fill" : "bolt.slash"
+            let symbolName = running ? "hand.raised.fill" : "hand.raised.slash"
             if let img = NSImage(systemSymbolName: symbolName, accessibilityDescription: nil) {
                 img.isTemplate = true // adapts to dark/light menu bar automatically
                 button.image = img
