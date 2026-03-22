@@ -412,22 +412,30 @@
         <!-- Lid -->
         <rect x="15" y="8" width="240" height="158" rx="9" fill="#1e1e22"/>
         <rect x="15" y="8" width="240" height="158" rx="9" stroke="#3a3a42" stroke-width="1.5"/>
+        <!-- Clip to screen bounds -->
+        <defs>
+          <clipPath id="screen-clip">
+            <rect x="24" y="16" width="222" height="142" rx="5"/>
+          </clipPath>
+        </defs>
         <!-- Screen -->
         <rect x="24" y="16" width="222" height="142" rx="5" fill="#080810"/>
-        <!-- Terminal lines -->
-        <text x="36" y="38"  font-family="monospace" font-size="8.5" fill="#3a3a4a">$ sudo spank-the-agent --agent --warcraft</text>
-        <text x="36" y="54"  font-family="monospace" font-size="8.5" fill="#3a3a4a">⚡ Agent mode enabled.</text>
-        <text x="36" y="70"  font-family="monospace" font-size="8.5" fill="#3a3a4a">⚔️  Warcraft mode — Yes, me lord.</text>
-        <text x="36" y="86"  font-family="monospace" font-size="8.5" fill="#3a3a4a">spank-the-agent: whip mode, default tuning +warcraft +agent</text>
-        <text x="36" y="102" font-family="monospace" font-size="8.5" fill="#3a3a4a">slap #1 [hard amp=0.41g] → [Enter]  → [Yes, me lord]</text>
-        <!-- Claude line -->
-        <text x="36" y="122" font-family="monospace" font-size="8.5" fill="#ff5500" id="claudeL">Claude: May I proceed? [y/n]</text>
-        <!-- Response line -->
-        <text x="36" y="138" font-family="monospace" font-size="8.5" fill="#ff5500" id="responseL" opacity="0">→ Enter pressed. Proceeding...</text>
-        <!-- Cursor -->
-        <rect x="219" y="114" width="6" height="9" fill="#00e676" id="curs">
-          <animate attributeName="opacity" values="1;0;1" dur="1s" repeatCount="indefinite"/>
-        </rect>
+        <!-- Terminal lines — clipped to screen -->
+        <g clip-path="url(#screen-clip)">
+          <text x="36" y="38"  font-family="monospace" font-size="8.5" fill="#3a3a4a">$ sudo spank-the-agent --agent</text>
+          <text x="36" y="52"  font-family="monospace" font-size="8.5" fill="#3a3a4a">⚡ Agent mode enabled.</text>
+          <text x="36" y="66"  font-family="monospace" font-size="8.5" fill="#3a3a4a">⚔️  Warcraft — Yes, me lord.</text>
+          <text x="36" y="80"  font-family="monospace" font-size="8.5" fill="#3a3a4a">whip mode +warcraft +agent</text>
+          <text x="36" y="94"  font-family="monospace" font-size="8.5" fill="#3a3a4a">slap #1 [amp=0.41g] → [Enter]</text>
+          <!-- Claude line -->
+          <text x="36" y="116" font-family="monospace" font-size="8.5" fill="#ff5500" id="claudeL">Claude: May I proceed? [y/n]</text>
+          <!-- Response line -->
+          <text x="36" y="132" font-family="monospace" font-size="8.5" fill="#00e676" id="responseL" opacity="0">✓ Enter pressed. Proceeding...</text>
+          <!-- Cursor -->
+          <rect x="215" y="108" width="6" height="9" fill="#ff5500" id="curs">
+            <animate attributeName="opacity" values="1;0;1" dur="1s" repeatCount="indefinite"/>
+          </rect>
+        </g>
         <!-- Notch -->
         <rect x="120" y="8" width="30" height="6" rx="3" fill="#080810"/>
       </svg>
