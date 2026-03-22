@@ -1,4 +1,5 @@
 import Cocoa
+import ServiceManagement
 
 class AppDelegate: NSObject, NSApplicationDelegate {
 
@@ -20,6 +21,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         rebuildMenu()
+
+        // Remove ourselves from Login Items — we were never meant to auto-start.
+        // macOS silently adds background apps; this undoes that every launch.
+        if #available(macOS 13.0, *) {
+            if SMAppService.mainApp.status == .enabled {
+                try? SMAppService.mainApp.unregister()
+            }
+        }
 
         // Show setup if never completed OR if sudoers file is missing (e.g. after reinstall)
         let setupDone = UserDefaults.standard.bool(forKey: "hasCompletedSetup")
