@@ -99,36 +99,26 @@ The keypress fires 80ms after the impact — just after the sound starts — so 
 
 ---
 
-## Running as a Service
+## Uninstall
 
 ```bash
-sudo tee /Library/LaunchDaemons/com.zkblk.spank-the-agent.plist > /dev/null << 'EOF'
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
-  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>Label</key>
-    <string>com.zkblk.spank-the-agent</string>
-    <key>ProgramArguments</key>
-    <array>
-        <string>/usr/local/bin/spank-the-agent</string>
-        <string>--agent</string>
-    </array>
-    <key>RunAtLoad</key>
-    <true/>
-    <key>KeepAlive</key>
-    <true/>
-    <key>StandardOutPath</key>
-    <string>/tmp/spank-the-agent.log</string>
-    <key>StandardErrorPath</key>
-    <string>/tmp/spank-the-agent.err</string>
-</dict>
-</plist>
-EOF
+# 1. Quit the app first (menu bar → Quit), then:
+sudo rm -rf /Applications/SpankTheAgent.app
 
-sudo launchctl load /Library/LaunchDaemons/com.zkblk.spank-the-agent.plist
+# 2. Remove the passwordless sudo rule
+sudo rm /etc/sudoers.d/spank-the-agent
+
+# 3. Kill any running helper
+sudo pkill -f spank-the-agent-helper
 ```
+
+> **If the helper keeps respawning after you kill it**, you have a LaunchDaemon installed
+> (from old documentation). Remove it first:
+> ```bash
+> sudo launchctl unload /Library/LaunchDaemons/com.zkblk.spank-the-agent.plist
+> sudo rm /Library/LaunchDaemons/com.zkblk.spank-the-agent.plist
+> ```
+> Then kill again: `sudo pkill -f spank-the-agent-helper`
 
 ---
 
